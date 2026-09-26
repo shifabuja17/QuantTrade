@@ -60,6 +60,13 @@ class RiskManager:
             alt_floor_sl = entry_price * (1.0 - (alt_min_pct / 100.0))
             if stop_loss > alt_floor_sl:
                 stop_loss = alt_floor_sl
+        else:
+            # Toleransi jarum (wicks) untuk BTC di 5m.
+            # Pastikan jarak SL minimal btc_min_sl_distance_pct (0.5%) dari entry.
+            btc_min_pct = getattr(self.config, 'min_sl_distance_pct', 0.5)
+            btc_floor_sl = entry_price * (1.0 - (btc_min_pct / 100.0))
+            if stop_loss > btc_floor_sl:
+                stop_loss = btc_floor_sl
 
         # Hitung jarak absolut dari Entry ke Stop Loss (Nilai 1R / 1 Risk)
         stop_distance = entry_price - stop_loss

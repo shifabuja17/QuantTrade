@@ -1,0 +1,196 @@
+{
+  "symbol": "BTC/USDT",
+  "start": "2024-05-01T00:00:00+00:00",
+  "end": "2024-07-01T00:00:00+00:00",
+  "train_days": 30,
+  "test_days": 10,
+  "step_days": 10,
+  "candidate_timeframes": [
+    "5m",
+    "15m"
+  ],
+  "folds": 3,
+  "selected_timeframes": {
+    "5m": 3
+  },
+  "overall": {
+    "trades": 2,
+    "wins": 2,
+    "losses": 0,
+    "win_rate_pct": 100.0,
+    "expectancy_pct": 0.8936420815952061,
+    "profit_factor": 999.0,
+    "net_pnl": 16.122832337122603,
+    "return_pct": 1.6122832337122532,
+    "max_drawdown_pct": 0.0,
+    "capital_start": 1000.0,
+    "capital_end": 1016.1228323371225
+  },
+  "fold_results": [
+    {
+      "fold": 1,
+      "train_start": "2024-05-01T00:00:00+00:00",
+      "train_end": "2024-05-31T00:00:00+00:00",
+      "test_start": "2024-05-31T00:00:00+00:00",
+      "test_end": "2024-06-10T00:00:00+00:00",
+      "selected_timeframe": "5m",
+      "selection_metrics": {
+        "5m": {
+          "symbol": "BTC/USDT",
+          "timeframe": "5m",
+          "volatility_ratio": 0.2822247632761913,
+          "valid_signals": 3,
+          "limit_orders": 0,
+          "filled_limit_orders": 0,
+          "fill_rate_pct": 100.0,
+          "trades": 1,
+          "expectancy_pct": 0.3296904918918357,
+          "profit_factor": 999.0,
+          "max_drawdown_pct": 0.0,
+          "score": -Infinity,
+          "eligible": false
+        },
+        "15m": {
+          "symbol": "BTC/USDT",
+          "timeframe": "15m",
+          "volatility_ratio": 0.4854505613552501,
+          "valid_signals": 3,
+          "limit_orders": 0,
+          "filled_limit_orders": 0,
+          "fill_rate_pct": 100.0,
+          "trades": 1,
+          "expectancy_pct": -0.025131221874996418,
+          "profit_factor": 0.0,
+          "max_drawdown_pct": 0.0,
+          "score": -Infinity,
+          "eligible": false
+        }
+      },
+      "test_metrics": {
+        "trades": 2,
+        "wins": 2,
+        "losses": 0,
+        "win_rate_pct": 100.0,
+        "expectancy_pct": 0.8936420815952061,
+        "profit_factor": 999.0,
+        "net_pnl": 16.122832337122603,
+        "return_pct": 1.6122832337122532,
+        "max_drawdown_pct": 0.0,
+        "capital_before": 1000.0,
+        "capital_after": 1016.1228323371225
+      },
+      "capital_before": 1000.0,
+      "capital_after": 1016.1228323371225
+    },
+    {
+      "fold": 2,
+      "train_start": "2024-05-11T00:00:00+00:00",
+      "train_end": "2024-06-10T00:00:00+00:00",
+      "test_start": "2024-06-10T00:00:00+00:00",
+      "test_end": "2024-06-20T00:00:00+00:00",
+      "selected_timeframe": "5m",
+      "selection_metrics": {
+        "5m": {
+          "symbol": "BTC/USDT",
+          "timeframe": "5m",
+          "volatility_ratio": 0.1255774578180057,
+          "valid_signals": 3,
+          "limit_orders": 0,
+          "filled_limit_orders": 0,
+          "fill_rate_pct": 100.0,
+          "trades": 3,
+          "expectancy_pct": 0.6977434603158864,
+          "profit_factor": 999.0,
+          "max_drawdown_pct": 0.0,
+          "score": -Infinity,
+          "eligible": false
+        },
+        "15m": {
+          "symbol": "BTC/USDT",
+          "timeframe": "15m",
+          "volatility_ratio": 0.2181963139940333,
+          "valid_signals": 3,
+          "limit_orders": 0,
+          "filled_limit_orders": 0,
+          "fill_rate_pct": 100.0,
+          "trades": 1,
+          "expectancy_pct": -0.025131221874996418,
+          "profit_factor": 0.0,
+          "max_drawdown_pct": 0.0,
+          "score": -Infinity,
+          "eligible": false
+        }
+      },
+      "test_metrics": {
+        "trades": 0,
+        "wins": 0,
+        "losses": 0,
+        "win_rate_pct": 0.0,
+        "expectancy_pct": 0.0,
+        "profit_factor": 0.0,
+        "net_pnl": 0.0,
+        "return_pct": 0.0,
+        "max_drawdown_pct": 0.0,
+        "capital_before": 1016.1228323371225,
+        "capital_after": 1016.1228323371225
+      },
+      "capital_before": 1016.1228323371225,
+      "capital_after": 1016.1228323371225
+    },
+    {
+      "fold": 3,
+      "train_start": "2024-05-21T00:00:00+00:00",
+      "train_end": "2024-06-20T00:00:00+00:00",
+      "test_start": "2024-06-20T00:00:00+00:00",
+      "test_end": "2024-06-30T00:00:00+00:00",
+      "selected_timeframe": "5m",
+      "selection_metrics": {
+        "5m": {
+          "symbol": "BTC/USDT",
+          "timeframe": "5m",
+          "volatility_ratio": 0.20104533870614236,
+          "valid_signals": 2,
+          "limit_orders": 0,
+          "filled_limit_orders": 0,
+          "fill_rate_pct": 100.0,
+          "trades": 2,
+          "expectancy_pct": 0.8817699445279119,
+          "profit_factor": 999.0,
+          "max_drawdown_pct": 0.0,
+          "score": -Infinity,
+          "eligible": false
+        },
+        "15m": {
+          "symbol": "BTC/USDT",
+          "timeframe": "15m",
+          "volatility_ratio": 0.5608856142812373,
+          "valid_signals": 0,
+          "limit_orders": 0,
+          "filled_limit_orders": 0,
+          "fill_rate_pct": 100.0,
+          "trades": 0,
+          "expectancy_pct": 0.0,
+          "profit_factor": 0.0,
+          "max_drawdown_pct": 0.0,
+          "score": -Infinity,
+          "eligible": false
+        }
+      },
+      "test_metrics": {
+        "trades": 0,
+        "wins": 0,
+        "losses": 0,
+        "win_rate_pct": 0.0,
+        "expectancy_pct": 0.0,
+        "profit_factor": 0.0,
+        "net_pnl": 0.0,
+        "return_pct": 0.0,
+        "max_drawdown_pct": 0.0,
+        "capital_before": 1016.1228323371225,
+        "capital_after": 1016.1228323371225
+      },
+      "capital_before": 1016.1228323371225,
+      "capital_after": 1016.1228323371225
+    }
+  ]
+}
