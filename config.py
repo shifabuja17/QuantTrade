@@ -59,14 +59,15 @@ class StrategyConfig:
     btc_filter_symbol: str = "BTC/USDT"
     ltf_min_body_ratio: float = 0.40       # Minimal body candle 40% (dilonggarkan dari 50%)
     ltf_volume_multiplier: float = 1.1     # Partisipasi volume 1.1x rata-rata 20 bar (dilonggarkan dari 1.3x)
-    stochastic_overbought: float = 75.0    # Batas atas Stochastic %K untuk filter Anti-Overbought (mencegah beli di pucuk)
+    stochastic_overbought: float = 85.0    # Batas atas Stochastic %K dilonggarkan ke 85 agar tidak memblokir tren kuat kripto
+    ltf_min_rsi: float = 50.0              # Batas minimal RSI LTF untuk memastikan ada momentum bullish
     btc_min_adx: float = 18.0              # Batas minimal ADX BTC untuk filter kekuatan tren (mencegah beli saat BTC sideway mati)
     enable_early_invalidation: bool = True # Cut loss dini saat candle 1H jebol di bawah EMA 50 atau BTC Bearish
     invalidation_check_htf_ema: bool = True
     invalidation_check_btc_filter: bool = True
     enable_adaptive_retest: bool = True    # Hybrid: Altcoin pakai Limit Retest 50% Body, BTC pakai Direct Market
-    retest_body_ratio: float = 0.50        # Diskon 50% retracement dari body candle breakout
-    retest_timeout_bars: int = 5           # Batas waktu tunggu limit order retest (5 bar LTF)
+    retest_body_ratio: float = 0.25        # Diskon 25% retracement dari body candle breakout
+    retest_timeout_bars: int = 8           # Batas waktu tunggu limit order retest (8 bar LTF)
     retest_altcoins_only: bool = True      # Hanya altcoin yang pakai retest (BTC langsung tembak market)
     fast_symbols: List[str] = field(default_factory=lambda: ["BTC/USDT", "LINK/USDT"])
 

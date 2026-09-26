@@ -372,9 +372,21 @@ class StrategyEngine:
             if stoch_k > max_stoch:
                 logger.debug(f"[{symbol} LTF] Sinyal dibatalkan: Stochastic %K ({stoch_k:.1f}) melebihi batas overbought ({max_stoch}).")
                 not_overbought = False
-        if is_bullish_candle and micro_bos and body_dominant and volume_spike and atr_valid and not_overbought:
+
+        # --- FILTER MOMENTUM (RSI) ---
+        # Memastikan ada momentum yang cukup sebelum entry (mencegah fakeout)
+        min_rsi = getattr(self.config, 'ltf_min_rsi', 50.0)
+        rsi_val = last_row.get('rsi', None)
+        has_momentum = True
+        if rsi_val is not None and not pd.isna(rsi_val):
+            if rsi_val < min_rsi:
+                logger.debug(f"[{symbol} LTF] Sinyal dibatalkan: RSI ({rsi_val:.1f}) di bawah batas momentum ({min_rsi}).")
+                has_momentum = False
+
+        if is_bullish_candle and micro_bos and body_dominant and volume_spike and atr_valid and not_overbought and has_momentum:
             stoch_info = f", Stoch: {stoch_k:.1f}" if (stoch_k is not None and not pd.isna(stoch_k)) else ""
-            logger.info(f"[{symbol} LTF] Micro BOS (True Swing High @ {true_swing_high:.4f}) Terdeteksi di zona {active_zone.zone_type}! Body: {body_ratio:.0%}, Vol: {last_row['volume']:.0f}/{avg_volume:.0f}{stoch_info}")
+            rsi_info = f", RSI: {rsi_val:.1f}" if (rsi_val is not None and not pd.isna(rsi_val)) else ""
+            logger.info(f"[{symbol} LTF] Micro BOS (True Swing High @ {true_swing_high:.4f}) Terdeteksi di zona {active_zone.zone_type}! Body: {body_ratio:.0%}, Vol: {last_row['volume']:.0f}/{avg_volume:.0f}{stoch_info}{rsi_info}")
             
             # Hybrid Adaptive Retest Entry:
             # BTC menggunakan Direct Market Entry untuk menyambar ledakan momentum.

@@ -63,11 +63,12 @@ def prepare_htf_frame(df: pd.DataFrame, ema_period: int = 50,
     return df_htf.dropna()
 
 def prepare_ltf_frame(df: pd.DataFrame, atr_period: int = 14,
-                      stoch_k: int = 14, stoch_k_smooth: int = 3, stoch_d: int = 3) -> pd.DataFrame:
+                      stoch_k: int = 14, stoch_k_smooth: int = 3, stoch_d: int = 3,
+                      rsi_period: int = 14) -> pd.DataFrame:
     """
     Menyiapkan DataFrame LTF.
-    Menghitung ATR untuk manajemen risiko dinamis dan Smoothed Stochastic Oscillator
-    sebagai filter anti-overbought / anti-FOMO.
+    Menghitung ATR untuk manajemen risiko dinamis, Smoothed Stochastic Oscillator
+    sebagai filter anti-overbought / anti-FOMO, dan RSI sebagai filter momentum.
     """
     df_ltf = df.copy()
     
@@ -85,5 +86,9 @@ def prepare_ltf_frame(df: pd.DataFrame, atr_period: int = 14,
     df_ltf['stoch_k'] = k
     df_ltf['stoch_d'] = d
     
+    # Hitung RSI
+    rsi_indicator = ta.momentum.RSIIndicator(close=df_ltf['close'], window=rsi_period)
+    df_ltf['rsi'] = rsi_indicator.rsi()
+
     return df_ltf.dropna()
 
