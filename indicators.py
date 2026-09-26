@@ -90,5 +90,8 @@ def prepare_ltf_frame(df: pd.DataFrame, atr_period: int = 14,
     rsi_indicator = ta.momentum.RSIIndicator(close=df_ltf['close'], window=rsi_period)
     df_ltf['rsi'] = rsi_indicator.rsi()
 
+    # Hitung EMA 50 untuk filter tren LTF
+    df_ltf['ema_50'] = ema(df_ltf['close'], period=50)
+
     return df_ltf.dropna()
 
