@@ -672,17 +672,25 @@ def main():
     parser.add_argument("--start", type=str, default="2024-11-01T00:00:00Z", help="Start datetime ISO format")
     parser.add_argument("--end", type=str, default="2025-11-01T00:00:00Z", help="End datetime ISO format")
     parser.add_argument("--config", type=str, default="config.json", help="Path to config.json")
-    parser.add_argument("--timeframe", type=str, default=None, help="Override LTF timeframe (misal 5m atau 15m). Jika kosong, otomatis 5m untuk BTC dan 15m untuk Altcoin.")
+    parser.add_argument("--timeframe", type=str, default=None, help="Override LTF timeframe (misal 5m atau 15m).")
+    parser.add_argument("--htf", type=str, default=None, help="Override HTF timeframe (misal 1h atau 4h).")
+    parser.add_argument("--ltf", type=str, default=None, help="Alias for --timeframe.")
     args = parser.parse_args()
+
+    # Apply aliases
+    ltf_val = args.ltf if args.ltf else args.timeframe
 
     backtester = Backtester(
         symbol=args.symbol,
         start_date=args.start,
         end_date=args.end,
         config_path=args.config,
-        timeframe=args.timeframe
+        timeframe=ltf_val
     )
     
+    if args.htf:
+        backtester.config.strategy.higher_timeframe = args.htf
+
     try:
         asyncio.run(backtester.run())
     except KeyboardInterrupt:
