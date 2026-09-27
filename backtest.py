@@ -167,8 +167,6 @@ class Backtester:
                 return
 
             bep_mult = getattr(self.config.risk, 'bep_trigger_atr_multiplier', 1.1)
-            if bep_mult > 1.2:
-                bep_mult = 1.1
             if not trade.get('bep_activated', False) and (high_price >= trade['entry_price'] + (stop_distance * bep_mult)):
                 bep_level = trade['entry_price'] * (1.0 + (bep_profit_pct / 100.0))
                 if bep_level > trade['stop_loss']:
@@ -257,8 +255,6 @@ class Backtester:
 
             # Jika belum sentuh TP1, cek aktivasi BEP biasa di 1.1R
             bep_mult = getattr(self.config.risk, 'bep_trigger_atr_multiplier', 1.1)
-            if bep_mult > 1.2:
-                bep_mult = 1.1
             if not trade.get('bep_activated', False) and (high_price >= trade['entry_price'] + (stop_distance * bep_mult)):
                 bep_level = trade['entry_price'] * (1.0 + (bep_profit_pct / 100.0))
                 if bep_level > trade['stop_loss']:

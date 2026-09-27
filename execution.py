@@ -112,10 +112,8 @@ class ExecutionEngine:
         current_profit = high_price - trade.entry_price
         protection_changed = False
 
-        # --- FASE 1: BREAK-EVEN PROTECTION (Profit >= 1.1R - 1.2R) ---
+        # --- FASE 1: BREAK-EVEN PROTECTION ---
         bep_mult = getattr(self.risk_config, 'bep_trigger_atr_multiplier', 1.1)
-        if bep_mult > 1.2:
-            bep_mult = 1.1
         bep_profit_pct = getattr(self.risk_config, 'bep_profit_pct', 0.15)
         if not trade.bep_activated and current_profit >= (stop_distance * bep_mult):
             bep_level = trade.entry_price * (1.0 + (bep_profit_pct / 100.0))
