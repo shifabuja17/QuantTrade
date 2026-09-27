@@ -168,17 +168,17 @@ class Backtester:
 
             bep_mult = getattr(self.config.risk, 'bep_trigger_atr_multiplier', 1.1)
             if not trade.get('bep_activated', False) and (high_price >= trade['entry_price'] + (stop_distance * bep_mult)):
-                bep_level = trade['entry_price'] * (1.0 + (bep_profit_pct / 100.0))
+                bep_level = trade.get('bep_target_price', trade['entry_price'] * (1.0 + (bep_profit_pct / 100.0)))
                 if bep_level > trade['stop_loss']:
                     trade['stop_loss'] = bep_level
                     trade['bep_activated'] = True
 
             current_profit = high_price - trade['entry_price']
-            if current_profit >= (stop_distance * 1.7):
-                recent_swing_low = df_window['low'].iloc[-15:].min()
-                structural_trail_sl = recent_swing_low * 0.998
-                if structural_trail_sl > trade['stop_loss'] and structural_trail_sl > trade['entry_price']:
-                    trade['stop_loss'] = structural_trail_sl
+            if current_profit >= (stop_distance * 1.5):
+                atr_val = trade.get('atr_value', stop_distance / 1.2)
+                atr_trail_sl = high_price - (1.5 * atr_val)
+                if atr_trail_sl > trade['stop_loss'] and atr_trail_sl > trade['entry_price']:
+                    trade['stop_loss'] = atr_trail_sl
             return
 
         # =================================================================
@@ -218,8 +218,8 @@ class Backtester:
                 self.daily_pnl += net_pnl_tp1
                 trade['realized_pnl'] = net_pnl_tp1
 
-                # Otomatis kunci SL sisa posisi ke BEP (Entry + 0.15%)
-                bep_level = trade['entry_price'] * (1.0 + (bep_profit_pct / 100.0))
+                # Otomatis kunci SL sisa posisi ke BEP Target (Napas ATR)
+                bep_level = trade.get('bep_target_price', trade['entry_price'] * (1.0 + (bep_profit_pct / 100.0)))
                 if bep_level > trade['stop_loss']:
                     trade['stop_loss'] = bep_level
                     trade['bep_activated'] = True
@@ -253,10 +253,10 @@ class Backtester:
                     return
                 return
 
-            # Jika belum sentuh TP1, cek aktivasi BEP biasa di 1.1R
-            bep_mult = getattr(self.config.risk, 'bep_trigger_atr_multiplier', 1.1)
+            # Jika belum sentuh TP1, cek aktivasi BEP biasa di 1.5R
+            bep_mult = getattr(self.config.risk, 'bep_trigger_atr_multiplier', 1.5)
             if not trade.get('bep_activated', False) and (high_price >= trade['entry_price'] + (stop_distance * bep_mult)):
-                bep_level = trade['entry_price'] * (1.0 + (bep_profit_pct / 100.0))
+                bep_level = trade.get('bep_target_price', trade['entry_price'] * (1.0 + (bep_profit_pct / 100.0)))
                 if bep_level > trade['stop_loss']:
                     trade['stop_loss'] = bep_level
                     trade['bep_activated'] = True
@@ -318,13 +318,13 @@ class Backtester:
                 self.cooldown_until = current_bar['timestamp'] + timedelta(minutes=self.config.execution.cooldown_minutes)
                 return
 
-            # Trailing Stop Struktural untuk sisa 50% (>= 1.7R)
+            # Trailing Stop ATR untuk sisa posisi (>= 1.5R)
             current_profit = high_price - trade['entry_price']
-            if current_profit >= (stop_distance * 1.7):
-                recent_swing_low = df_window['low'].iloc[-15:].min()
-                structural_trail_sl = recent_swing_low * 0.998
-                if structural_trail_sl > trade['stop_loss'] and structural_trail_sl > trade['entry_price']:
-                    trade['stop_loss'] = structural_trail_sl
+            if current_profit >= (stop_distance * 1.5):
+                atr_val = trade.get('atr_value', stop_distance / 1.2)
+                atr_trail_sl = high_price - (1.5 * atr_val)
+                if atr_trail_sl > trade['stop_loss'] and atr_trail_sl > trade['entry_price']:
+                    trade['stop_loss'] = atr_trail_sl
 
     def close_trade(self, exit_price: float, reason: str, exit_time: datetime):
         """Menutup posisi, menghitung fee dua arah, dan memperbarui state."""
@@ -473,7 +473,9 @@ class Backtester:
                     rs_start = max(0, btc_pos - self.config.strategy.rs_ema_period - 10)
                     df_btc_window_for_rs = df_btc.iloc[rs_start : btc_pos + 1]
 
-            # 3. EARLY INVALIDATION CHECK (Cut loss dini saat candle 1H patah tren atau BTC Bearish)
+            # 3. EARLY INVALIDATION CHECK (Proteksi Dinamis)
+            # Jika BTC crash atau koin turun di bawah EMA HTF, kita TIDAK menutup posisi langsung.
+            # Sebaliknya, jika posisi sedang profit, kita geser Stop Loss ke BEP.
             enable_inval = getattr(self.config.strategy, 'enable_early_invalidation', True)
             if self.active_trade and enable_inval and new_htf_bar:
                 last_htf_candle = df_htf.iloc[htf_pos]
@@ -485,9 +487,16 @@ class Backtester:
                 btc_broken = check_btc and is_altcoin and use_btc_filter and (not self.strategy.btc_market_bullish)
 
                 if coin_htf_broken or btc_broken:
-                    reason = "EARLY_INVALID_HTF_EMA" if coin_htf_broken else "EARLY_INVALID_BTC_BEARISH"
-                    self.close_trade(current_bar['open'], reason, current_ltf_time)
-                    self.cooldown_until = current_ltf_time + timedelta(minutes=self.config.execution.cooldown_minutes)
+                    trade = self.active_trade
+                    current_price = current_bar['close']
+                    bep_profit_pct = getattr(self.config.risk, 'bep_profit_pct', 0.15)
+                    bep_level = trade['entry_price'] * (1.0 + (bep_profit_pct / 100.0))
+
+                    # Hanya pindahkan SL ke BEP jika harga SAAT INI sudah di atas BEP level
+                    if current_price > bep_level and not trade.get('bep_activated', False):
+                        if bep_level > trade['stop_loss']:
+                            trade['stop_loss'] = bep_level
+                            trade['bep_activated'] = True
 
             # 4. Evaluasi Pending Limit Retest Order (jika ada)
             if self.pending_limit_order is not None:

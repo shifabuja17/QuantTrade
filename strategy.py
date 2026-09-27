@@ -150,39 +150,35 @@ class StrategyEngine:
     def update_btc_market_status(self, df_btc_htf: pd.DataFrame) -> bool:
         """
         Mengevaluasi status tren Bitcoin 1H sebagai Induk Pasar (BTC Market Filter).
-        Altcoin hanya boleh dibeli (LONG) jika Bitcoin:
-        1. Berada di atas EMA 50
-        2. EMA 50 berslope naik (uptrend)
-        3. Memiliki kekuatan tren yang cukup (ADX >= btc_min_adx, default 18.0)
-           untuk mencegah beli saat BTC choppy / sideway mati di akhir pekan.
+        Relaksasi: Hanya akan memberikan nilai False (bearish / memblokir) jika BTC
+        mengalami deviasi turun tajam ekstrem dalam 1 jam (misal > 1.5%) DAN close di bawah EMA 50.
+        Selain kondisi itu, return True agar RS Filter Altcoin yang mengambil alih.
         """
         if df_btc_htf.empty or len(df_btc_htf) < 2:
+            self.btc_market_bullish = True
             return self.btc_market_bullish
 
         last_row = df_btc_htf.iloc[-1]
-        prev_row = df_btc_htf.iloc[-2]
 
-        ema_col = 'ema' if 'ema' in df_btc_htf.columns else None
-        if not ema_col:
-            return self.btc_market_bullish
+        # Hitung perubahan persentase (ROC / Change %) BTC dalam 1 bar terakhir
+        pct_change = ((last_row['close'] - last_row['open']) / last_row['open']) * 100.0
 
-        btc_min_adx = getattr(self.config, 'btc_min_adx', 18.0)
-        btc_adx = last_row['adx'] if 'adx' in last_row else 20.0
+        # Cek apakah harga di bawah EMA 50
+        below_ema = False
+        if 'ema' in last_row and not pd.isna(last_row['ema']):
+            below_ema = last_row['close'] < last_row['ema']
 
-        # Syarat BTC Bullish: Close > EMA 50, EMA 50 naik, dan ADX >= btc_min_adx
-        btc_bullish = (
-            (last_row['close'] > last_row['ema']) and 
-            (last_row['ema'] > prev_row['ema']) and 
-            (btc_adx >= btc_min_adx)
-        )
+        # Ambil batas crash dari konfigurasi (sekarang default -1.5)
+        crash_threshold = getattr(self.config, 'btc_crash_threshold_pct', -1.5)
 
-        # BTC Macro Baseline Filter: BTC wajib berada di atas TEMA 200 agar Altcoin aman mengambil posisi
-        if btc_bullish and getattr(self.config, 'btc_require_tema_filter', True):
-            if 'tema' in last_row and not pd.isna(last_row['tema']):
-                if last_row['close'] <= last_row['tema']:
-                    btc_bullish = False
+        # Jika BTC crash melebihi batas (misal -2.0% <= -1.5%) DAN sedang di bawah EMA 50, blokir pasar
+        if pct_change <= crash_threshold and below_ema:
+            self.btc_market_bullish = False
+            logger.debug(f"[BTC Market] Crash & Breakdown terdeteksi: {pct_change:.2f}% <= {crash_threshold}%. Memblokir Altcoin.")
+        else:
+            # Jika BTC sekadar sideway, ranging, atau naik lambat, tetap izinkan
+            self.btc_market_bullish = True
 
-        self.btc_market_bullish = bool(btc_bullish)
         return self.btc_market_bullish
 
     def get_context(self, symbol: str) -> SymbolContext:

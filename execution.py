@@ -113,15 +113,21 @@ class ExecutionEngine:
         protection_changed = False
 
         # --- FASE 1: BREAK-EVEN PROTECTION ---
-        bep_mult = getattr(self.risk_config, 'bep_trigger_atr_multiplier', 1.1)
+        bep_mult = getattr(self.risk_config, 'bep_trigger_atr_multiplier', 1.5)
         bep_profit_pct = getattr(self.risk_config, 'bep_profit_pct', 0.15)
         if not trade.bep_activated and current_profit >= (stop_distance * bep_mult):
-            bep_level = trade.entry_price * (1.0 + (bep_profit_pct / 100.0))
+            # Target BEP Baru: Memberi napas saat break-even (Entry + 0.3 * ATR)
+            atr_val = getattr(trade, 'atr_value', stop_distance / 1.2) if hasattr(trade, 'atr_value') else stop_distance / 1.2
+            bep_target = trade.entry_price + (0.3 * atr_val)
+            # Jika BEP target terlalu dekat, jatuh balik ke Entry + Fee
+            min_bep = trade.entry_price * (1.0 + (bep_profit_pct / 100.0))
+            bep_level = max(bep_target, min_bep)
+
             if bep_level > trade.stop_loss:
                 trade.stop_loss = self.fetcher.format_price(symbol, bep_level)
                 trade.bep_activated = True
                 protection_changed = True
-                logger.info(f"[{symbol} LIVE] 🛡️ BEP Terpicu (+{bep_mult:.1f}R)! Stop Loss dipindahkan ke {trade.stop_loss} (Entry + Fee Buffer {bep_profit_pct}%)")
+                logger.info(f"[{symbol} LIVE] 🛡️ BEP Terpicu (+{bep_mult:.1f}R)! Stop Loss dipindahkan ke {trade.stop_loss}")
 
         # --- FASE 2: TRAILING STOP STRUKTURAL (Profit >= 1.7R) ---
         if current_profit >= (stop_distance * 1.7):
@@ -742,7 +748,7 @@ class ExecutionEngine:
         Mengevaluasi apakah rezim pasar makro rusak saat posisi aktif berjalan:
         1. Candle 1H koin ditutup di bawah EMA 50.
         2. Filter BTC berubah menjadi Bearish (untuk Altcoin).
-        Jika terpicu, posisi langsung diexit dini di market order.
+        Proteksi Dinamis: Jika posisi sedang profit, geser SL ke BEP. Jangan market close.
         """
         if symbol not in self.active_trades:
             return False
@@ -755,22 +761,43 @@ class ExecutionEngine:
 
         last_row = df_htf.iloc[-1]
         current_price = float(last_row['close'])
+        trade = self.active_trades[symbol]
+        triggered = False
 
         # Syarat A: Candle HTF Close di bawah EMA 50
         check_htf_ema = getattr(self.risk_config, 'invalidation_check_htf_ema', True)
         if check_htf_ema and 'ema' in last_row and not pd.isna(last_row['ema']):
             if last_row['close'] < last_row['ema']:
-                logger.warning(f"[{symbol}] 🛡️ Early Invalidation: Candle 1H jebol di bawah EMA 50 ({last_row['close']:.4f} < {last_row['ema']:.4f}). Cut loss dini!")
-                await self.close_trade(symbol, current_price, "EARLY_INVALID_HTF_EMA")
-                return True
+                triggered = True
+                logger.debug(f"[{symbol}] 🛡️ Early Invalidation Triggered: HTF Candle Close < EMA 50.")
 
         # Syarat B: Induk BTC Market berubah menjadi Bearish (Khusus Altcoin)
         check_btc = getattr(self.risk_config, 'invalidation_check_btc_filter', True)
         is_altcoin = "BTC" not in symbol.upper()
         if check_btc and is_altcoin and not btc_market_bullish:
-            logger.warning(f"[{symbol}] 🛡️ Early Invalidation: Induk Pasar Bitcoin berbalik Bearish. Emergency Exit Altcoin!")
-            await self.close_trade(symbol, current_price, "EARLY_INVALID_BTC_BEARISH")
-            return True
+            triggered = True
+            logger.debug(f"[{symbol}] 🛡️ Early Invalidation Triggered: BTC Market Bearish.")
+
+        if triggered:
+            bep_profit_pct = getattr(self.risk_config, 'bep_profit_pct', 0.15)
+            stop_distance = trade.entry_price - trade.initial_stop_loss
+            atr_val = getattr(trade, 'atr_value', stop_distance / 1.2) if hasattr(trade, 'atr_value') else stop_distance / 1.2
+            bep_target = trade.entry_price + (0.3 * atr_val)
+            min_bep = trade.entry_price * (1.0 + (bep_profit_pct / 100.0))
+            bep_level = max(bep_target, min_bep)
+
+            # Jika harga saat ini sudah di atas BEP, geser Stop Loss ke BEP.
+            if current_price > bep_level and not trade.bep_activated:
+                if bep_level > trade.stop_loss:
+                    trade.stop_loss = self.fetcher.format_price(symbol, bep_level)
+                    trade.bep_activated = True
+                    logger.warning(f"[{symbol}] 🛡️ Proteksi Dinamis Aktif: Menggeser SL ke BEP akibat Early Invalidation.")
+
+                    if self._exchange_protection_enabled():
+                        # Update OCO SL di bursa
+                        await self._update_exchange_sl(trade)
+                    else:
+                        self._save_state()
 
         return False
 
@@ -816,9 +843,14 @@ class ExecutionEngine:
             trade.realized_pnl += net_pnl
             trade.tp1_executed = True
 
-            # Naikkan SL sisa posisi ke Break-Even Point (+0.15% fee buffer)
+            # Naikkan SL sisa posisi ke Break-Even Point (Entry + 0.3 * ATR)
             bep_profit_pct = getattr(self.risk_config, 'bep_profit_pct', 0.15)
-            bep_level = trade.entry_price * (1.0 + (bep_profit_pct / 100.0))
+            stop_distance = trade.entry_price - trade.initial_stop_loss
+            atr_val = getattr(trade, 'atr_value', stop_distance / 1.2) if hasattr(trade, 'atr_value') else stop_distance / 1.2
+            bep_target = trade.entry_price + (0.3 * atr_val)
+            min_bep = trade.entry_price * (1.0 + (bep_profit_pct / 100.0))
+            bep_level = max(bep_target, min_bep)
+
             if bep_level > trade.stop_loss:
                 trade.stop_loss = self.fetcher.format_price(symbol, bep_level)
                 trade.bep_activated = True
