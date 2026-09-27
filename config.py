@@ -103,6 +103,8 @@ class StrategyConfig:
 class RiskConfig:
     max_risk_per_trade: float = 2.0  # Dalam persen (%) - 2.0% ($20 per trade)
     symbol_risk_pct: Dict[str, float] = field(default_factory=lambda: {"LINK/USDT": 1.0, "SOL/USDT": 1.0})
+    symbol_tp_ratio: Dict[str, float] = field(default_factory=lambda: {"SOL/USDT": 0.7})
+    symbol_tp2_multiplier: Dict[str, float] = field(default_factory=lambda: {"SOL/USDT": 1.8})
     max_daily_loss_pct: float = 5.0
     max_daily_profit_pct: float = 6.0
     sl_atr_multiplier: float = 1.5
@@ -137,6 +139,8 @@ class ExecutionConfig:
     max_concurrent_symbols: int = 3
     cooldown_minutes: int = 15
     sl_cooldown_minutes: int = 240
+    max_consecutive_losses: int = 2
+    streak_cooldown_hours: int = 24
     quote_currency: str = "USDT"
     paper_cash: float = 1000.0
     max_slippage_pct: float = 0.1
