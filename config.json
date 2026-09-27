@@ -5,7 +5,13 @@
     "ADA/USDT",
     "ETH/USDT",
     "AVAX/USDT",
-    "SOL/USDT"
+    "SOL/USDT",
+    "XRP/USDT",
+    "POL/USDT",
+    "DOT/USDT",
+    "ATOM/USDT",
+    "XLM/USDT",
+    "ALGO/USDT"
   ],
   "exchange": {
     "exchange_id": "binance",
@@ -114,7 +120,7 @@
   },
   "notification": {
     "enabled": true,
-    "telegram_bot_token": "8608602887:AAHn6i1QWErp4iejksZ1uffXMc8LjWBBqfA",
-    "telegram_chat_id": "5465938032"
+    "telegram_bot_token": "",
+    "telegram_chat_id": ""
   }
 }

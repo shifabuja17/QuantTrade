@@ -147,8 +147,8 @@ class LoggingConfig:
 @dataclass
 class NotificationConfig:
     enabled: bool = True
-    telegram_bot_token: str = "8608602887:AAHn6i1QWErp4iejksZ1uffXMc8LjWBBqfA"
-    telegram_chat_id: str = "5465938032"
+    telegram_bot_token: str = ""
+    telegram_chat_id: str = ""
 
 @dataclass
 class BotConfig:
