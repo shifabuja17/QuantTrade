@@ -85,6 +85,7 @@ class ExecutionEngine:
         self.active_trades: Dict[str, ActiveTrade] = {}
         self.pending_orders: Dict[str, PendingLimitOrder] = {}
         self.cooldowns: Dict[str, datetime] = {}
+        self.consecutive_losses: Dict[str, int] = {}
         
         # PNL & Circuit Breaker tracking
         self.current_day: str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
@@ -155,7 +156,9 @@ class ExecutionEngine:
             "daily_pnl": self.daily_pnl,
             "circuit_breaker_active": self.circuit_breaker_active,
             "active_trades": {},
-            "pending_orders": {}
+            "pending_orders": {},
+            "cooldowns": {sym: cd.isoformat() for sym, cd in self.cooldowns.items()},
+            "consecutive_losses": self.consecutive_losses
         }
         
         for symbol, trade in self.active_trades.items():
@@ -214,6 +217,13 @@ class ExecutionEngine:
                 p_data["created_at"] = datetime.fromisoformat(p_data["created_at"])
                 self.pending_orders[symbol] = PendingLimitOrder(**p_data)
 
+            # Load Cooldowns & Consecutive Losses
+            cooldowns_data = data.get("cooldowns", {})
+            for symbol, cd_iso in cooldowns_data.items():
+                self.cooldowns[symbol] = datetime.fromisoformat(cd_iso)
+            self.consecutive_losses = data.get("consecutive_losses", {})
+
+            logger.info(f"Berhasil memuat state: {len(self.active_trades)} posisi aktif & {len(self.pending_orders)} pending limit order dipulihkan.")
             logger.info(f"Berhasil memuat state: {len(self.active_trades)} posisi aktif & {len(self.pending_orders)} pending limit order dipulihkan.")
             
         except Exception as e:
@@ -979,8 +989,21 @@ class ExecutionEngine:
 
             del self.active_trades[symbol]
             
-            # Dynamic Cooldown
-            if "STOP_LOSS" in reason:
+            # Dynamic Cooldown & Streak Breaker
+            if total_net_pnl < 0:
+                self.consecutive_losses[symbol] = self.consecutive_losses.get(symbol, 0) + 1
+            else:
+                self.consecutive_losses[symbol] = 0
+
+            max_losses = getattr(self.risk_config, "max_consecutive_losses", 2)
+            streak_cd = getattr(self.risk_config, "streak_cooldown_hours", 24)
+
+            if self.consecutive_losses.get(symbol, 0) >= max_losses:
+                cd_minutes = streak_cd * 60
+                logger.warning(f"[{symbol}] 🔴 STREAK BREAKER AKTIF! {max_losses} loss berturut-turut. Cooldown {streak_cd} jam.")
+                # Reset streak after triggering cooldown
+                self.consecutive_losses[symbol] = 0
+            elif "STOP_LOSS" in reason:
                 cd_minutes = self.exec_config.sl_cooldown_minutes
             else:
                 cd_minutes = self.exec_config.cooldown_minutes

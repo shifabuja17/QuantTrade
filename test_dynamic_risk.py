@@ -467,6 +467,7 @@ def run_simulation(symbol: str, risk_model: str = "FIXED_2PCT"):
         'model': risk_model,
         'trades': tot_trades,
         'net_pnl': tot_pnl,
+        'pnl_pct': (tot_pnl / 1000) * 100.0 if tot_trades > 0 else 0,
         'pnl_pct': (tot_pnl / initial_capital) * 100.0,
         'pf': pf,
         'wr': win_rate,

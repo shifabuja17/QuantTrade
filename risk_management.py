@@ -67,8 +67,10 @@ class RiskManager:
         # Hitung jarak absolut dari Entry ke Stop Loss (Nilai 1R / 1 Risk)
         stop_distance = entry_price - stop_loss
 
-        # 3. Hitung Take Profit (Berbasis Multiplier RRR)
-        take_profit = entry_price + (stop_distance * self.config.tp_atr_multiplier)
+        # 3. Hitung Take Profit (Berbasis Multiplier RRR) - Baca Override per Simbol
+        symbol_tp2_map = getattr(self.config, 'symbol_tp2_multiplier', {})
+        tp_mult = symbol_tp2_map.get(symbol, self.config.tp_atr_multiplier)
+        take_profit = entry_price + (stop_distance * tp_mult)
 
         # 4. Hitung Break Even Trigger (Kapan SL dipindah ke Entry)
         bep_trigger_price = entry_price + (stop_distance * self.config.bep_trigger_atr_multiplier) 
@@ -176,7 +178,10 @@ class RiskManager:
         tp1_mult = getattr(self.config, 'partial_tp_atr_multiplier', 1.5)
         tp1_price = entry_price + (stop_distance * tp1_mult)
         tp2_price = take_profit
-        partial_ratio = getattr(self.config, 'partial_tp_ratio', 0.6)
+
+        # Baca Override Porsi TP1 per Simbol
+        symbol_tp_ratio_map = getattr(self.config, 'symbol_tp_ratio', {})
+        partial_ratio = symbol_tp_ratio_map.get(symbol, getattr(self.config, 'partial_tp_ratio', 0.6))
 
         # Target BEP Baru: Memberi napas saat break-even (Entry + 0.3 * ATR)
         bep_target_price = entry_price + (0.3 * atr_value)

@@ -67,6 +67,9 @@ class Backtester:
         self.daily_pnl = 0.0
         self.circuit_breaker_active = False
         
+        # Streak Breaker (Consecutive Losses Cooldown)
+        self.consecutive_losses = 0
+
         # Folder cache data CSV
         self.data_dir = "backtest_data"
         os.makedirs(self.data_dir, exist_ok=True)
@@ -369,8 +372,21 @@ class Backtester:
 
         self.active_trade = None
 
-        # Cooldown Dinamis: SL dikenai hukuman istirahat lebih panjang
-        if reason == "STOP_LOSS":
+        # Update Streak Breaker
+        if total_net_pnl < 0:
+            self.consecutive_losses += 1
+        else:
+            self.consecutive_losses = 0
+
+        # Cooldown Dinamis & Streak Breaker
+        max_losses = getattr(self.config.execution, 'max_consecutive_losses', 2)
+        streak_hours = getattr(self.config.execution, 'streak_cooldown_hours', 24)
+
+        if self.consecutive_losses >= max_losses:
+            cd_minutes = streak_hours * 60
+            print(f"[{exit_time}] Streak Breaker: {max_losses} losses beruntun. Cooldown selama {streak_hours} jam.")
+            self.consecutive_losses = 0  # Reset agar setelah cooldown bisa trade normal lagi
+        elif reason == "STOP_LOSS":
             cd_minutes = self.config.execution.sl_cooldown_minutes
         else:
             cd_minutes = self.config.execution.cooldown_minutes
