@@ -62,11 +62,11 @@ class StrategyConfig:
     stochastic_overbought: float = 70.0    # Batas atas Stochastic %K (diketatkan ke 70 agar tidak beli di pucuk)
     ltf_min_rsi: float = 50.0              # Batas minimal RSI LTF untuk memastikan ada momentum bullish
     btc_min_adx: float = 18.0              # Batas minimal ADX BTC untuk filter kekuatan tren (mencegah beli saat BTC sideway mati)
-    btc_crash_threshold_pct: float = -2.0  # Deviasi ekstrem (misal BTC turun > 2.0% dalam 1 jam)
+    btc_crash_threshold_pct: float = -1.8  # Deviasi ekstrem (misal BTC turun > 1.8% dalam 1 jam)
     enable_early_invalidation: bool = True # Cut loss dini saat candle 1H jebol di bawah EMA 50 atau BTC Bearish
     invalidation_check_htf_ema: bool = True
     invalidation_check_btc_filter: bool = True
-    enable_adaptive_retest: bool = False   # Eksekusi instan di Market (karena retest jarang terjadi di 15m)
+    enable_adaptive_retest: bool = True    # Gunakan Limit Order cerdas di batas OB/FVG
     retest_body_ratio: float = 0.35        # Retest sedalam 35%
     retest_timeout_bars: int = 8           # Batas waktu tunggu limit order retest (8 bar LTF)
     retest_altcoins_only: bool = False     # BTC juga dipaksa retest (mencegah market order di pucuk candle)
