@@ -62,7 +62,7 @@ class StrategyConfig:
     stochastic_overbought: float = 70.0    # Batas atas Stochastic %K (diketatkan ke 70 agar tidak beli di pucuk)
     ltf_min_rsi: float = 50.0              # Batas minimal RSI LTF untuk memastikan ada momentum bullish
     btc_min_adx: float = 18.0              # Batas minimal ADX BTC untuk filter kekuatan tren (mencegah beli saat BTC sideway mati)
-    btc_crash_threshold_pct: float = -2.0  # Deviasi ekstrem (misal BTC turun > 2% dalam 1 jam)
+    btc_crash_threshold_pct: float = -1.5  # Deviasi ekstrem (misal BTC turun > 1.5% dalam 1 jam)
     enable_early_invalidation: bool = True # Cut loss dini saat candle 1H jebol di bawah EMA 50 atau BTC Bearish
     invalidation_check_htf_ema: bool = True
     invalidation_check_btc_filter: bool = True
@@ -105,10 +105,10 @@ class RiskConfig:
     max_daily_loss_pct: float = 5.0
     max_daily_profit_pct: float = 6.0
     sl_atr_multiplier: float = 1.5
-    tp_atr_multiplier: float = 2.5           # TP2 diatur ke 2.5R
+    tp_atr_multiplier: float = 2.0           # TP2 diatur ke 2.0R
     enable_partial_tp: bool = True           # Aktifkan kembali Partial TP
-    partial_tp_ratio: float = 0.5            # Porsi posisi yang dijual di TP1 (50%)
-    partial_tp_atr_multiplier: float = 1.0   # TP1 di 1.0R (Risk-to-Reward 1:1.5 - 1:2.5)
+    partial_tp_ratio: float = 0.6            # Porsi posisi yang dijual di TP1 (60%)
+    partial_tp_atr_multiplier: float = 1.5   # TP1 di 1.5R (Risk-to-Reward 1:1.5 - 1:2.0)
     bep_trigger_atr_multiplier: float = 1.5  # Dilonggarkan ke 1.5R agar posisi punya nafas lebih panjang
     bep_profit_pct: float = 0.15             # Buffer fee exchange 0.15% di atas entry
     enable_early_invalidation: bool = True   # Cut loss dini
@@ -118,7 +118,7 @@ class RiskConfig:
     max_quote_allocation_pct: float = 90.0
     use_static_sl_tp: bool = False
 
-    min_sl_distance_pct: float = 0.5  # Jarak SL minimal 0.5% dari harga entri (BTC)
+    min_sl_distance_pct: float = 0.6  # Jarak SL minimal 0.6% dari harga entri (BTC)
     max_sl_distance_pct: float = 1.5  # Jarak SL maksimal BTC 1.5% dari harga entri
     alt_min_sl_distance_pct: float = 1.5 # Jarak SL minimal Altcoin 1.5% agar kebal jarum volatilitas 15m
     alt_sl_atr_multiplier: float = 1.8   # Pengali ATR untuk SL Altcoin (1.5x - 2.0x ATR)
