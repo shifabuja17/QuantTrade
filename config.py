@@ -26,7 +26,7 @@ class ExchangeConfig:
 
 @dataclass
 class StrategyConfig:
-    higher_timeframe: str = "1h"
+    higher_timeframe: str = "4h"
     lower_timeframe: str = "15m"
     btc_lower_timeframe: str = "15m"       # Standarisasi minimal 15m untuk memangkas fee impact
     alt_lower_timeframe: str = "15m"
@@ -55,7 +55,7 @@ class StrategyConfig:
     max_zones_per_symbol: int = 5
     max_zone_distance_pct: float = 2.0
     zone_expiry_bars: int = 48
-    enable_btc_filter: bool = True
+    enable_btc_filter: bool = False
     btc_filter_symbol: str = "BTC/USDT"
     ltf_min_body_ratio: float = 0.50       # Breakout wajib 50% nyata
     ltf_volume_multiplier: float = 0.5     # Sangat dilonggarkan agar tidak memotong rally kompresi
@@ -119,13 +119,13 @@ class RiskConfig:
     use_static_sl_tp: bool = False
     min_rrr: float = 1.8                     # Syarat Mutlak Minimal Net Reward-to-Risk = 1.8
 
-    min_sl_distance_pct: float = 0.8  # Jarak SL minimal absolut 0.8% dari harga entri (mencegah fee inflation)
+    min_sl_distance_pct: float = 0.85  # Jarak SL minimal absolut 0.85% dari harga entri (mencegah fee inflation)
     max_sl_distance_pct: float = 1.5  # Jarak SL maksimal BTC 1.5% dari harga entri
     alt_min_sl_distance_pct: float = 1.5 # Jarak SL minimal Altcoin 1.5% agar kebal jarum volatilitas 15m
     alt_sl_atr_multiplier: float = 1.8   # Pengali ATR untuk SL Altcoin (1.5x - 2.0x ATR)
     alt_max_sl_distance_pct: float = 3.5 # Jarak SL maksimal untuk Altcoin agar tidak tersapu jarum (3.5%)
     btc_symbol: str = "BTC/USDT"
-    max_fee_to_risk_ratio: float = 0.45 # Maksimal fee memakan 45% dari toleransi risiko (dinaikkan dari 30%)
+    max_fee_to_risk_ratio: float = 0.50 # Beri toleransi fee hingga 50%
     estimated_exchange_fee_pct: float = 0.2
 
 @dataclass
