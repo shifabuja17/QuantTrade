@@ -151,7 +151,7 @@ class StrategyEngine:
         """
         Mengevaluasi status tren Bitcoin 1H sebagai Induk Pasar (BTC Market Filter).
         Crash Protection Only: HANYA akan memblokir altcoin jika BTC
-        mengalami drop ekstrem (misal > 2.0%) dalam 1 bar.
+        mengalami drop ekstrem (misal > 1.8%) dalam 1 bar.
         Trend/sideways diabaikan agar Altcoin bebas terbang.
         """
         if df_btc_htf.empty or len(df_btc_htf) < 2:
@@ -365,25 +365,31 @@ class StrategyEngine:
             stoch_info = f", Stoch: {stoch_k:.1f}" if (stoch_k is not None and not pd.isna(stoch_k)) else ""
             logger.info(f"[{symbol} LTF] Micro BOS (True Swing High @ {true_swing_high:.4f}) Terdeteksi di zona {active_zone.zone_type}! Body: {body_ratio:.0%}, Vol: {last_row['volume']:.0f}/{avg_volume:.0f}{stoch_info}")
             
-            # Hybrid Adaptive Retest Entry:
-            # BTC menggunakan Direct Market Entry untuk menyambar ledakan momentum.
-            # Altcoin (LINK, ETH, dll) memasang Limit Order pada retest 50% Body Retracement untuk memperketat SL & memangkas slippage.
+            # Relaksasi Retest Entry (15m Optimal):
+            # Pada 15m, tidak perlu menanti pullback body candle. Langsung Limit di batas struktural:
+            # Jika tipe zona FVG -> Limit di Equilibrium (50%) FVG
+            # Jika tipe zona OB -> Limit di Upper Border (tepi atas OB)
             is_altcoin = "BTC" not in symbol.upper()
             enable_retest = getattr(self.config, 'enable_adaptive_retest', True)
-            retest_altcoins_only = getattr(self.config, 'retest_altcoins_only', True)
+            retest_altcoins_only = getattr(self.config, 'retest_altcoins_only', False)
             
             use_retest = enable_retest and (is_altcoin if retest_altcoins_only else True)
             if use_retest:
-                retest_ratio = getattr(self.config, 'retest_body_ratio', 0.50)
-                retest_p = current_price - (retest_ratio * (current_price - last_row['open']))
+                if active_zone.zone_type == "FVG":
+                    retest_p = (active_zone.upper + active_zone.lower) / 2.0
+                    reason_type = "FVG 50% Eq Limit"
+                else:
+                    # OB_BOS atau OB
+                    retest_p = active_zone.upper
+                    reason_type = "OB Upper Edge Limit"
+
+                # Pengaman: pastikan retest tidak melampaui harga close saat ini (jika close < upper OB, gunakan close)
                 retest_p = min(retest_p, current_price * 0.9995)
-                if retest_p <= active_zone.lower:
-                    retest_p = (current_price + active_zone.lower) / 2.0
                 
                 entry_type = "LIMIT_RETEST"
                 entry_price = retest_p
-                timeout_bars = getattr(self.config, 'retest_timeout_bars', 5)
-                reason_str = f"{active_zone.zone_type} Rejection + True BOS + Retest 50% Body + Vol({last_row['volume']:.0f}/{avg_volume:.0f}){stoch_info}"
+                timeout_bars = getattr(self.config, 'retest_timeout_bars', 8)
+                reason_str = f"{active_zone.zone_type} Rejection + True BOS + {reason_type} + Vol({last_row['volume']:.0f}/{avg_volume:.0f}){stoch_info}"
             else:
                 entry_type = "MARKET"
                 entry_price = current_price
