@@ -116,8 +116,11 @@ class RiskManager:
             logger.debug(f"[{symbol}] Trade ditolak: Jarak SL terlalu lebar ({stop_distance_pct:.2f}% > {max_sl_pct}%).")
             return None
 
-        # 3. Risk-Based Position Sizing
-        max_risk_amount = total_capital * (self.config.max_risk_per_trade / 100.0)
+        # 3. Risk-Based Position Sizing (Membaca Alokasi Spesifik Aset)
+        symbol_risk_map = getattr(self.config, 'symbol_risk_pct', {})
+        risk_pct = symbol_risk_map.get(symbol, self.config.max_risk_per_trade)
+        max_risk_amount = total_capital * (risk_pct / 100.0)
+
         quantity = max_risk_amount / stop_distance
         notional = quantity * entry_price 
 

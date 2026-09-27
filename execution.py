@@ -116,9 +116,9 @@ class ExecutionEngine:
         bep_mult = getattr(self.risk_config, 'bep_trigger_atr_multiplier', 1.5)
         bep_profit_pct = getattr(self.risk_config, 'bep_profit_pct', 0.15)
         if not trade.bep_activated and current_profit >= (stop_distance * bep_mult):
-            # Trailing Stop 1.0 ATR
+            # Trailing Stop 1.5 ATR (Dilonggarkan)
             atr_val = getattr(trade, 'atr_value', stop_distance / 1.2) if hasattr(trade, 'atr_value') else stop_distance / 1.2
-            trail_target = high_price - (1.0 * atr_val)
+            trail_target = high_price - (1.5 * atr_val)
             # Pastikan tidak jatuh di bawah Entry + Fee
             min_bep = trade.entry_price * (1.0 + (bep_profit_pct / 100.0))
             trail_level = max(trail_target, min_bep)
@@ -843,11 +843,11 @@ class ExecutionEngine:
             trade.realized_pnl += net_pnl
             trade.tp1_executed = True
 
-            # Terapkan Trailing Stop sisa posisi (Market Price - 1.0 ATR)
+            # Terapkan Trailing Stop sisa posisi (Market Price - 1.5 ATR)
             bep_profit_pct = getattr(self.risk_config, 'bep_profit_pct', 0.15)
             stop_distance = trade.entry_price - trade.initial_stop_loss
             atr_val = getattr(trade, 'atr_value', stop_distance / 1.2) if hasattr(trade, 'atr_value') else stop_distance / 1.2
-            trail_target = market_price - (1.0 * atr_val)
+            trail_target = market_price - (1.5 * atr_val)
             min_bep = trade.entry_price * (1.0 + (bep_profit_pct / 100.0))
             trail_level = max(trail_target, min_bep)
 
@@ -1048,7 +1048,7 @@ class ExecutionEngine:
                 bep_profit_pct = getattr(self.risk_config, 'bep_profit_pct', 0.15)
                 if not trade.bep_activated and current_price >= (trade.entry_price + (stop_distance * bep_mult)):
                     atr_val = getattr(trade, 'atr_value', stop_distance / 1.2) if hasattr(trade, 'atr_value') else stop_distance / 1.2
-                    trail_target = current_price - (1.0 * atr_val)
+                    trail_target = current_price - (1.5 * atr_val)
                     min_bep = trade.entry_price * (1.0 + (bep_profit_pct / 100.0))
                     trail_level = max(trail_target, min_bep)
 

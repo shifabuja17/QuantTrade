@@ -288,6 +288,15 @@ class StrategyEngine:
         if df_ltf.empty or len(df_ltf) < 2:
             return None
 
+        # FILTER TREN MANDIRI ASET PADA HTF
+        # Mencegah entry pada saat kondisi tren HTF koin itu sendiri sudah hancur (di bawah EMA 50)
+        if df_htf is not None and not df_htf.empty:
+            htf_last_row = df_htf.iloc[-1]
+            if 'ema' in htf_last_row and not pd.isna(htf_last_row['ema']):
+                if htf_last_row['close'] < htf_last_row['ema']:
+                    logger.debug(f"[{symbol} LTF] Sinyal dibatalkan: Harga Close HTF ({htf_last_row['close']:.4f}) di bawah EMA50 HTF ({htf_last_row['ema']:.4f}).")
+                    return None
+
         last_row = df_ltf.iloc[-1]
         current_price = last_row['close']
 
