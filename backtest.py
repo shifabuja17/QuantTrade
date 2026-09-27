@@ -163,9 +163,9 @@ class Backtester:
 
             bep_mult = getattr(self.config.risk, 'bep_trigger_atr_multiplier', 1.1)
             if not trade.get('bep_activated', False) and (high_price >= trade['entry_price'] + (stop_distance * bep_mult)):
-                # Tidak lagi memindahkan SL ke BEP murni, tetapi gunakan trailing 1.0 ATR
+                # Tidak lagi memindahkan SL ke BEP murni, tetapi gunakan trailing 1.5 ATR (Dilonggarkan)
                 atr_val = trade.get('atr_value', stop_distance / 1.2)
-                atr_trail_sl = high_price - (1.0 * atr_val)
+                atr_trail_sl = high_price - (1.5 * atr_val)
                 if atr_trail_sl > trade['stop_loss']:
                     trade['stop_loss'] = atr_trail_sl
                     trade['bep_activated'] = True
@@ -173,7 +173,7 @@ class Backtester:
             current_profit = high_price - trade['entry_price']
             if current_profit >= (stop_distance * 1.5):
                 atr_val = trade.get('atr_value', stop_distance / 1.2)
-                atr_trail_sl = high_price - (1.0 * atr_val)
+                atr_trail_sl = high_price - (1.5 * atr_val)
                 if atr_trail_sl > trade['stop_loss'] and atr_trail_sl > trade['entry_price']:
                     trade['stop_loss'] = atr_trail_sl
             return
@@ -215,9 +215,9 @@ class Backtester:
                 self.daily_pnl += net_pnl_tp1
                 trade['realized_pnl'] = net_pnl_tp1
 
-                # Mulai Terapkan Trailing Stop pasca TP1 (Jarak 1.0 ATR)
+                # Mulai Terapkan Trailing Stop pasca TP1 (Jarak 1.5 ATR - Dilonggarkan)
                 atr_val = trade.get('atr_value', stop_distance / 1.2)
-                atr_trail_sl = tp1_price - (1.0 * atr_val)
+                atr_trail_sl = tp1_price - (1.5 * atr_val)
                 if atr_trail_sl > trade['stop_loss']:
                     trade['stop_loss'] = atr_trail_sl
                     trade['bep_activated'] = True
@@ -255,7 +255,7 @@ class Backtester:
             bep_mult = getattr(self.config.risk, 'bep_trigger_atr_multiplier', 1.5)
             if not trade.get('bep_activated', False) and (high_price >= trade['entry_price'] + (stop_distance * bep_mult)):
                 atr_val = trade.get('atr_value', stop_distance / 1.2)
-                atr_trail_sl = high_price - (1.0 * atr_val)
+                atr_trail_sl = high_price - (1.5 * atr_val)
                 if atr_trail_sl > trade['stop_loss']:
                     trade['stop_loss'] = atr_trail_sl
                     trade['bep_activated'] = True
@@ -317,11 +317,11 @@ class Backtester:
                 self.cooldown_until = current_bar['timestamp'] + timedelta(minutes=self.config.execution.cooldown_minutes)
                 return
 
-            # Trailing Stop ATR untuk sisa posisi pasca TP1 (1.0 ATR distance)
+            # Trailing Stop ATR untuk sisa posisi pasca TP1 (1.5 ATR distance)
             current_profit = high_price - trade['entry_price']
             if current_profit >= (stop_distance * 1.5):
                 atr_val = trade.get('atr_value', stop_distance / 1.2)
-                atr_trail_sl = high_price - (1.0 * atr_val)
+                atr_trail_sl = high_price - (1.5 * atr_val)
                 if atr_trail_sl > trade['stop_loss']:
                     trade['stop_loss'] = atr_trail_sl
 

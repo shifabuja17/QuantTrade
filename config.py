@@ -26,7 +26,7 @@ class ExchangeConfig:
 
 @dataclass
 class StrategyConfig:
-    higher_timeframe: str = "4h"
+    higher_timeframe: str = "1h"
     lower_timeframe: str = "15m"
     btc_lower_timeframe: str = "15m"       # Standarisasi minimal 15m untuk memangkas fee impact
     alt_lower_timeframe: str = "15m"
@@ -102,14 +102,15 @@ class StrategyConfig:
 @dataclass
 class RiskConfig:
     max_risk_per_trade: float = 2.0  # Dalam persen (%) - 2.0% ($20 per trade)
+    symbol_risk_pct: Dict[str, float] = field(default_factory=lambda: {"LINK/USDT": 1.0, "SOL/USDT": 1.0})
     max_daily_loss_pct: float = 5.0
     max_daily_profit_pct: float = 6.0
     sl_atr_multiplier: float = 1.5
-    tp_atr_multiplier: float = 3.5           # TP2 diperlebar ke 3.5R untuk membiarkan winner berlari
+    tp_atr_multiplier: float = 2.8           # TP2 diset ke 2.8R
     enable_partial_tp: bool = True           # Aktifkan kembali Partial TP
-    partial_tp_ratio: float = 0.5            # Porsi posisi yang dijual di TP1 (50%)
-    partial_tp_atr_multiplier: float = 1.5   # TP1 di 1.5R
-    bep_trigger_atr_multiplier: float = 1.5  # Mulai aktifkan trailing saat TP1 (1.5R) hit
+    partial_tp_ratio: float = 0.6            # Tutup 60% posisi di TP1
+    partial_tp_atr_multiplier: float = 1.4   # TP1 di 1.4R
+    bep_trigger_atr_multiplier: float = 1.4  # Mulai aktifkan trailing saat TP1 (1.4R) hit
     bep_profit_pct: float = 0.15             # Buffer fee exchange 0.15% di atas entry
     enable_early_invalidation: bool = True   # Cut loss dini
     invalidation_check_htf_ema: bool = True
