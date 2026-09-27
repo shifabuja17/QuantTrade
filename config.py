@@ -125,7 +125,7 @@ class RiskConfig:
     alt_sl_atr_multiplier: float = 1.8   # Pengali ATR untuk SL Altcoin (1.5x - 2.0x ATR)
     alt_max_sl_distance_pct: float = 3.5 # Jarak SL maksimal untuk Altcoin agar tidak tersapu jarum (3.5%)
     btc_symbol: str = "BTC/USDT"
-    max_fee_to_risk_ratio: float = 0.3 # Maksimal fee memakan 30% dari toleransi risiko
+    max_fee_to_risk_ratio: float = 0.45 # Maksimal fee memakan 45% dari toleransi risiko (dinaikkan dari 30%)
     estimated_exchange_fee_pct: float = 0.2
 
 @dataclass
