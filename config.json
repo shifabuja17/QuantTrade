@@ -62,7 +62,7 @@
     "retest_body_ratio": 0.5,
     "retest_timeout_bars": 5,
     "retest_altcoins_only": true,
-    "enable_relative_strength_filter": true,
+    "enable_relative_strength_filter": false,
     "rs_ema_period": 20,
     "rs_roc_period": 24,
     "rs_filter_mode": "EMA",

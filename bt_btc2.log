@@ -1,0 +1,27 @@
+[BTC/USDT] Trade dibatalkan: Estimasi Fee ($7.15) memakan 35.8% dari Risiko ($20.00).
+[BTC/USDT] Trade dibatalkan: Estimasi Fee ($6.26) memakan 31.3% dari Risiko ($20.00).
+[BTC/USDT] Trade dibatalkan: Estimasi Fee ($10.40) memakan 52.0% dari Risiko ($20.00).
+[BTC/USDT] Trade dibatalkan: Estimasi Fee ($6.59) memakan 33.0% dari Risiko ($20.00).
+[BTC/USDT] Trade dibatalkan: Estimasi Fee ($7.63) memakan 38.1% dari Risiko ($20.00).
+[BTC/USDT] Trade dibatalkan: Estimasi Fee ($9.76) memakan 48.8% dari Risiko ($20.00).
+[BTC/USDT] Trade dibatalkan: Estimasi Fee ($7.61) memakan 38.0% dari Risiko ($20.00).
+[BTC/USDT] Trade dibatalkan: Estimasi Fee ($12.07) memakan 60.3% dari Risiko ($20.00).
+[BTC/USDT] Trade dibatalkan: Estimasi Fee ($10.66) memakan 53.3% dari Risiko ($20.00).
+[BTC/USDT] Trade dibatalkan: Estimasi Fee ($8.03) memakan 40.2% dari Risiko ($20.00).
+[BTC/USDT] Trade dibatalkan: Estimasi Fee ($6.99) memakan 34.9% dari Risiko ($20.00).
+[BTC/USDT] Trade dibatalkan: Estimasi Fee ($6.21) memakan 31.1% dari Risiko ($20.00).
+[BTC/USDT] Trade dibatalkan: Estimasi Fee ($9.38) memakan 46.9% dari Risiko ($20.00).
+[BTC/USDT] Trade dibatalkan: Estimasi Fee ($7.22) memakan 36.1% dari Risiko ($20.00).
+
+=======================================================
+MEMULAI BACKTEST: BTC/USDT [HTF: 1h, LTF: 15m]
+=======================================================
+[*] Memuat data 1h dari cache CSV: BTC_USDT_1h_2024-11-01_2025-11-01.csv
+[*] Memuat data 15m dari cache CSV: BTC_USDT_15m_2024-11-01_2025-11-01.csv
+
+[*] Melakukan pre-calculation indikator...
+
+=======================================================
+HASIL BACKTEST TERVERIFIKASI: BTC/USDT (LTF: 15m)
+=======================================================
+Tidak ada trade yang tereksekusi selama periode ini.
