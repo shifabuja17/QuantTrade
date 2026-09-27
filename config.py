@@ -59,7 +59,7 @@ class StrategyConfig:
     btc_filter_symbol: str = "BTC/USDT"
     ltf_min_body_ratio: float = 0.40       # Minimal body candle 40% (dilonggarkan dari 50%)
     ltf_volume_multiplier: float = 1.1     # Partisipasi volume 1.1x rata-rata 20 bar (dilonggarkan dari 1.3x)
-    stochastic_overbought: float = 85.0    # Batas atas Stochastic %K dilonggarkan ke 85 agar tidak memblokir tren kuat kripto
+    stochastic_overbought: float = 70.0    # Batas atas Stochastic %K (diketatkan ke 70 agar tidak beli di pucuk)
     ltf_min_rsi: float = 50.0              # Batas minimal RSI LTF untuk memastikan ada momentum bullish
     btc_min_adx: float = 18.0              # Batas minimal ADX BTC untuk filter kekuatan tren (mencegah beli saat BTC sideway mati)
     enable_early_invalidation: bool = True # Cut loss dini saat candle 1H jebol di bawah EMA 50 atau BTC Bearish
@@ -104,11 +104,11 @@ class RiskConfig:
     max_daily_loss_pct: float = 5.0
     max_daily_profit_pct: float = 6.0
     sl_atr_multiplier: float = 1.5
-    tp_atr_multiplier: float = 2.5
+    tp_atr_multiplier: float = 3.0           # TP2 dinaikkan menjadi 3.0R untuk memaksimalkan win
     enable_partial_tp: bool = True           # Mengaktifkan Partial Take-Profit (Scaling Out)
     partial_tp_ratio: float = 0.5            # Porsi posisi yang dijual di TP1 (50%)
     partial_tp_atr_multiplier: float = 1.5   # TP1 di 1.5R (mengunci profit awal)
-    bep_trigger_atr_multiplier: float = 1.1  # Terkunci di 1.1R
+    bep_trigger_atr_multiplier: float = 1.5  # Dilonggarkan ke 1.5R agar posisi punya nafas lebih panjang
     bep_profit_pct: float = 0.15             # Buffer fee exchange 0.15% di atas entry
     enable_early_invalidation: bool = True   # Cut loss dini
     invalidation_check_htf_ema: bool = True
