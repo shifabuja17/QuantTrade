@@ -118,15 +118,15 @@ class RiskManager:
         notional = quantity * entry_price 
 
         reward_distance = take_profit - entry_price
-        rrr = reward_distance / stop_distance
         
-        if rrr < 1.3:
-            logger.debug(f"[{symbol}] Trade dibatalkan: RRR terlalu rendah ({rrr:.2f}).")
-            return None
-
-        # --- FILTER 2: RASIO FEE TERHADAP RISIKO ---
+        # --- FILTER 2: RASIO FEE TERHADAP RISIKO & NET RRR ---
         # Estimasi biaya fee bolak-balik (buka & tutup posisi)
-        estimated_fee_amount = notional * (self.config.estimated_exchange_fee_pct / 100.0)
+        fee_rate = (self.config.estimated_exchange_fee_pct / 100.0)
+        entry_fee = notional * fee_rate
+        sl_fee = (stop_loss * quantity) * fee_rate
+        tp_fee = (take_profit * quantity) * fee_rate
+
+        estimated_fee_amount = entry_fee + tp_fee
         fee_to_risk_ratio = estimated_fee_amount / max_risk_amount
 
         if fee_to_risk_ratio > self.config.max_fee_to_risk_ratio:
@@ -134,6 +134,16 @@ class RiskManager:
                 f"[{symbol}] Trade dibatalkan: Estimasi Fee (${estimated_fee_amount:.2f}) "
                 f"memakan {fee_to_risk_ratio*100:.1f}% dari Risiko (${max_risk_amount:.2f})."
             )
+            return None
+
+        # Hitung Net RRR (Skenario Realistis setelah Fee)
+        net_risk = (stop_distance * quantity) + entry_fee + sl_fee
+        net_reward = (reward_distance * quantity) - entry_fee - tp_fee
+        net_rrr = net_reward / net_risk if net_risk > 0 else 0
+
+        min_rrr = getattr(self.config, 'min_rrr', 1.8)
+        if net_rrr < min_rrr:
+            logger.debug(f"[{symbol}] Trade dibatalkan: Net RRR terlalu rendah ({net_rrr:.2f} < {min_rrr}).")
             return None
 
         # 4. Respect Max Quote Allocation

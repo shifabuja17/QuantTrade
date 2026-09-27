@@ -105,11 +105,11 @@ class RiskConfig:
     max_daily_loss_pct: float = 5.0
     max_daily_profit_pct: float = 6.0
     sl_atr_multiplier: float = 1.5
-    tp_atr_multiplier: float = 2.5           # TP2 diatur ke 2.5R
+    tp_atr_multiplier: float = 3.5           # TP2 diperlebar ke 3.5R untuk membiarkan winner berlari
     enable_partial_tp: bool = True           # Aktifkan kembali Partial TP
     partial_tp_ratio: float = 0.5            # Porsi posisi yang dijual di TP1 (50%)
     partial_tp_atr_multiplier: float = 1.5   # TP1 di 1.5R
-    bep_trigger_atr_multiplier: float = 1.5  # Mulai aktifkan trailing/BEP saat TP1 (1.5R) hit
+    bep_trigger_atr_multiplier: float = 1.5  # Mulai aktifkan trailing saat TP1 (1.5R) hit
     bep_profit_pct: float = 0.15             # Buffer fee exchange 0.15% di atas entry
     enable_early_invalidation: bool = True   # Cut loss dini
     invalidation_check_htf_ema: bool = True
@@ -117,6 +117,7 @@ class RiskConfig:
     min_notional: float = 5.0  # Batas minimum order exchange (misal Binance = 5 USDT)
     max_quote_allocation_pct: float = 90.0
     use_static_sl_tp: bool = False
+    min_rrr: float = 1.8                     # Syarat Mutlak Minimal Net Reward-to-Risk = 1.8
 
     min_sl_distance_pct: float = 0.8  # Jarak SL minimal absolut 0.8% dari harga entri (mencegah fee inflation)
     max_sl_distance_pct: float = 1.5  # Jarak SL maksimal BTC 1.5% dari harga entri
