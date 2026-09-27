@@ -57,7 +57,7 @@ class StrategyConfig:
     zone_expiry_bars: int = 48
     enable_btc_filter: bool = True
     btc_filter_symbol: str = "BTC/USDT"
-    ltf_min_body_ratio: float = 0.40       # Minimal body candle 40% (dilonggarkan dari 50%)
+    ltf_min_body_ratio: float = 0.50       # Breakout wajib 50% nyata
     ltf_volume_multiplier: float = 1.1     # Partisipasi volume 1.1x rata-rata 20 bar (dilonggarkan dari 1.3x)
     stochastic_overbought: float = 70.0    # Batas atas Stochastic %K (diketatkan ke 70 agar tidak beli di pucuk)
     ltf_min_rsi: float = 50.0              # Batas minimal RSI LTF untuk memastikan ada momentum bullish
@@ -65,10 +65,10 @@ class StrategyConfig:
     enable_early_invalidation: bool = True # Cut loss dini saat candle 1H jebol di bawah EMA 50 atau BTC Bearish
     invalidation_check_htf_ema: bool = True
     invalidation_check_btc_filter: bool = True
-    enable_adaptive_retest: bool = True    # Hybrid: Altcoin pakai Limit Retest 50% Body, BTC pakai Direct Market
-    retest_body_ratio: float = 0.25        # Diskon 25% retracement dari body candle breakout
+    enable_adaptive_retest: bool = True    # Gunakan retest
+    retest_body_ratio: float = 0.35        # Retest sedalam 35%
     retest_timeout_bars: int = 8           # Batas waktu tunggu limit order retest (8 bar LTF)
-    retest_altcoins_only: bool = True      # Hanya altcoin yang pakai retest (BTC langsung tembak market)
+    retest_altcoins_only: bool = False     # BTC juga dipaksa retest (mencegah market order di pucuk candle)
     fast_symbols: List[str] = field(default_factory=lambda: ["BTC/USDT", "LINK/USDT"])
 
     # === ADAPTIVE RELATIVE STRENGTH FILTER ===
@@ -105,7 +105,7 @@ class RiskConfig:
     max_daily_profit_pct: float = 6.0
     sl_atr_multiplier: float = 1.5
     tp_atr_multiplier: float = 3.0           # TP2 dinaikkan menjadi 3.0R untuk memaksimalkan win
-    enable_partial_tp: bool = True           # Mengaktifkan Partial Take-Profit (Scaling Out)
+    enable_partial_tp: bool = False          # Matikan Partial TP untuk memaksimalkan RRR ke TP full (3.0)
     partial_tp_ratio: float = 0.5            # Porsi posisi yang dijual di TP1 (50%)
     partial_tp_atr_multiplier: float = 1.5   # TP1 di 1.5R (mengunci profit awal)
     bep_trigger_atr_multiplier: float = 1.5  # Dilonggarkan ke 1.5R agar posisi punya nafas lebih panjang
