@@ -45,16 +45,11 @@ class Backtester:
         self.strategy = StrategyEngine(self.config.strategy)
         self.risk_manager = RiskManager(self.config.risk)
         
-        # Adaptive Hybrid Timeframe: BTC & LINK default 5m, Altcoins default 15m (atau override via CLI)
+        # Paksa seluruh LTF minimal ke 15m (mencegah fee erosion dan fakeouts di 5m)
         if timeframe:
             self.ltf = timeframe
-        elif hasattr(self.strategy, 'get_symbol_ltf'):
-            self.ltf = self.strategy.get_symbol_ltf(self.symbol)
-        elif hasattr(self.config.strategy, 'get_ltf_for_symbol'):
-            self.ltf = self.config.strategy.get_ltf_for_symbol(self.symbol)
         else:
-            sym_clean = self.symbol.upper().replace('/', '')
-            self.ltf = "5m" if ("BTC" in sym_clean or "LINK" in sym_clean) else "15m"
+            self.ltf = "15m"
         
         self.initial_capital = self.config.execution.paper_cash
         self.current_capital = self.initial_capital
