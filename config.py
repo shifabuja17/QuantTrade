@@ -105,11 +105,11 @@ class RiskConfig:
     max_daily_loss_pct: float = 5.0
     max_daily_profit_pct: float = 6.0
     sl_atr_multiplier: float = 1.5
-    tp_atr_multiplier: float = 2.2           # TP2 diatur ke 2.2R
+    tp_atr_multiplier: float = 2.5           # TP2 diatur ke 2.5R
     enable_partial_tp: bool = True           # Aktifkan kembali Partial TP
     partial_tp_ratio: float = 0.5            # Porsi posisi yang dijual di TP1 (50%)
-    partial_tp_atr_multiplier: float = 1.3   # TP1 di 1.3R
-    bep_trigger_atr_multiplier: float = 1.3  # Pindahkan SL ke BEP hanya setelah hit TP1
+    partial_tp_atr_multiplier: float = 1.5   # TP1 di 1.5R
+    bep_trigger_atr_multiplier: float = 1.5  # Mulai aktifkan trailing/BEP saat TP1 (1.5R) hit
     bep_profit_pct: float = 0.15             # Buffer fee exchange 0.15% di atas entry
     enable_early_invalidation: bool = True   # Cut loss dini
     invalidation_check_htf_ema: bool = True
@@ -118,7 +118,7 @@ class RiskConfig:
     max_quote_allocation_pct: float = 90.0
     use_static_sl_tp: bool = False
 
-    min_sl_distance_pct: float = 0.9  # Jarak SL minimal absolut 0.9% dari harga entri (menjaga ratio fee)
+    min_sl_distance_pct: float = 0.8  # Jarak SL minimal absolut 0.8% dari harga entri (mencegah fee inflation)
     max_sl_distance_pct: float = 1.5  # Jarak SL maksimal BTC 1.5% dari harga entri
     alt_min_sl_distance_pct: float = 1.5 # Jarak SL minimal Altcoin 1.5% agar kebal jarum volatilitas 15m
     alt_sl_atr_multiplier: float = 1.8   # Pengali ATR untuk SL Altcoin (1.5x - 2.0x ATR)

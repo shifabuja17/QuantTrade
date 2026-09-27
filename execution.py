@@ -112,22 +112,22 @@ class ExecutionEngine:
         current_profit = high_price - trade.entry_price
         protection_changed = False
 
-        # --- FASE 1: BREAK-EVEN PROTECTION ---
+        # --- FASE 1: TRAILING PROTECTION ---
         bep_mult = getattr(self.risk_config, 'bep_trigger_atr_multiplier', 1.5)
         bep_profit_pct = getattr(self.risk_config, 'bep_profit_pct', 0.15)
         if not trade.bep_activated and current_profit >= (stop_distance * bep_mult):
-            # Target BEP Baru: Memberi napas saat break-even (Entry + 0.3 * ATR)
+            # Trailing Stop 1.0 ATR
             atr_val = getattr(trade, 'atr_value', stop_distance / 1.2) if hasattr(trade, 'atr_value') else stop_distance / 1.2
-            bep_target = trade.entry_price + (0.3 * atr_val)
-            # Jika BEP target terlalu dekat, jatuh balik ke Entry + Fee
+            trail_target = high_price - (1.0 * atr_val)
+            # Pastikan tidak jatuh di bawah Entry + Fee
             min_bep = trade.entry_price * (1.0 + (bep_profit_pct / 100.0))
-            bep_level = max(bep_target, min_bep)
+            trail_level = max(trail_target, min_bep)
 
-            if bep_level > trade.stop_loss:
-                trade.stop_loss = self.fetcher.format_price(symbol, bep_level)
+            if trail_level > trade.stop_loss:
+                trade.stop_loss = self.fetcher.format_price(symbol, trail_level)
                 trade.bep_activated = True
                 protection_changed = True
-                logger.info(f"[{symbol} LIVE] 🛡️ BEP Terpicu (+{bep_mult:.1f}R)! Stop Loss dipindahkan ke {trade.stop_loss}")
+                logger.info(f"[{symbol} LIVE] 🛡️ Trailing Aktif (+{bep_mult:.1f}R)! Stop Loss dipindahkan ke {trade.stop_loss}")
 
         # --- FASE 2: TRAILING STOP STRUKTURAL (Profit >= 1.7R) ---
         if current_profit >= (stop_distance * 1.7):
@@ -843,16 +843,16 @@ class ExecutionEngine:
             trade.realized_pnl += net_pnl
             trade.tp1_executed = True
 
-            # Naikkan SL sisa posisi ke Break-Even Point (Entry + 0.3 * ATR)
+            # Terapkan Trailing Stop sisa posisi (Market Price - 1.0 ATR)
             bep_profit_pct = getattr(self.risk_config, 'bep_profit_pct', 0.15)
             stop_distance = trade.entry_price - trade.initial_stop_loss
             atr_val = getattr(trade, 'atr_value', stop_distance / 1.2) if hasattr(trade, 'atr_value') else stop_distance / 1.2
-            bep_target = trade.entry_price + (0.3 * atr_val)
+            trail_target = market_price - (1.0 * atr_val)
             min_bep = trade.entry_price * (1.0 + (bep_profit_pct / 100.0))
-            bep_level = max(bep_target, min_bep)
+            trail_level = max(trail_target, min_bep)
 
-            if bep_level > trade.stop_loss:
-                trade.stop_loss = self.fetcher.format_price(symbol, bep_level)
+            if trail_level > trade.stop_loss:
+                trade.stop_loss = self.fetcher.format_price(symbol, trail_level)
                 trade.bep_activated = True
 
             if self._exchange_protection_enabled() and trade.remaining_quantity > 0:
@@ -1042,16 +1042,20 @@ class ExecutionEngine:
                     await self.close_trade(symbol, current_price, "STOP_LOSS")
                     continue
 
-                # 3. Real-time BEP check sebelum TP1
+                # 3. Real-time Trailing check sebelum TP1
                 stop_distance = trade.entry_price - trade.stop_loss_initial
-                bep_mult = getattr(self.risk_config, 'bep_trigger_atr_multiplier', 1.1)
+                bep_mult = getattr(self.risk_config, 'bep_trigger_atr_multiplier', 1.5)
                 bep_profit_pct = getattr(self.risk_config, 'bep_profit_pct', 0.15)
                 if not trade.bep_activated and current_price >= (trade.entry_price + (stop_distance * bep_mult)):
-                    bep_level = trade.entry_price * (1.0 + (bep_profit_pct / 100.0))
-                    if bep_level > trade.stop_loss:
-                        trade.stop_loss = self.fetcher.format_price(symbol, bep_level)
+                    atr_val = getattr(trade, 'atr_value', stop_distance / 1.2) if hasattr(trade, 'atr_value') else stop_distance / 1.2
+                    trail_target = current_price - (1.0 * atr_val)
+                    min_bep = trade.entry_price * (1.0 + (bep_profit_pct / 100.0))
+                    trail_level = max(trail_target, min_bep)
+
+                    if trail_level > trade.stop_loss:
+                        trade.stop_loss = self.fetcher.format_price(symbol, trail_level)
                         trade.bep_activated = True
-                        logger.info(f"[{symbol} LIVE] 🛡️ Real-time BEP Terpicu (+{bep_mult:.1f}R)! Stop Loss dipindahkan ke {trade.stop_loss}")
+                        logger.info(f"[{symbol} LIVE] 🛡️ Real-time Trailing Terpicu (+{bep_mult:.1f}R)! Stop Loss dipindahkan ke {trade.stop_loss}")
                         if self._exchange_protection_enabled():
                             refreshed = await self._refresh_exchange_protection(trade)
                             if not refreshed:

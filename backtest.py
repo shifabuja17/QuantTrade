@@ -163,15 +163,17 @@ class Backtester:
 
             bep_mult = getattr(self.config.risk, 'bep_trigger_atr_multiplier', 1.1)
             if not trade.get('bep_activated', False) and (high_price >= trade['entry_price'] + (stop_distance * bep_mult)):
-                bep_level = trade.get('bep_target_price', trade['entry_price'] * (1.0 + (bep_profit_pct / 100.0)))
-                if bep_level > trade['stop_loss']:
-                    trade['stop_loss'] = bep_level
+                # Tidak lagi memindahkan SL ke BEP murni, tetapi gunakan trailing 1.0 ATR
+                atr_val = trade.get('atr_value', stop_distance / 1.2)
+                atr_trail_sl = high_price - (1.0 * atr_val)
+                if atr_trail_sl > trade['stop_loss']:
+                    trade['stop_loss'] = atr_trail_sl
                     trade['bep_activated'] = True
 
             current_profit = high_price - trade['entry_price']
             if current_profit >= (stop_distance * 1.5):
                 atr_val = trade.get('atr_value', stop_distance / 1.2)
-                atr_trail_sl = high_price - (1.5 * atr_val)
+                atr_trail_sl = high_price - (1.0 * atr_val)
                 if atr_trail_sl > trade['stop_loss'] and atr_trail_sl > trade['entry_price']:
                     trade['stop_loss'] = atr_trail_sl
             return
@@ -213,10 +215,11 @@ class Backtester:
                 self.daily_pnl += net_pnl_tp1
                 trade['realized_pnl'] = net_pnl_tp1
 
-                # Otomatis kunci SL sisa posisi ke BEP Target (Napas ATR)
-                bep_level = trade.get('bep_target_price', trade['entry_price'] * (1.0 + (bep_profit_pct / 100.0)))
-                if bep_level > trade['stop_loss']:
-                    trade['stop_loss'] = bep_level
+                # Mulai Terapkan Trailing Stop pasca TP1 (Jarak 1.0 ATR)
+                atr_val = trade.get('atr_value', stop_distance / 1.2)
+                atr_trail_sl = tp1_price - (1.0 * atr_val)
+                if atr_trail_sl > trade['stop_loss']:
+                    trade['stop_loss'] = atr_trail_sl
                     trade['bep_activated'] = True
 
                 # Cek jika bar yang sama langsung tembus TP2 (2.5R)
@@ -248,12 +251,13 @@ class Backtester:
                     return
                 return
 
-            # Jika belum sentuh TP1, cek aktivasi BEP biasa di 1.5R
+            # Jika belum sentuh TP1, cek aktivasi Trailing biasa di 1.5R
             bep_mult = getattr(self.config.risk, 'bep_trigger_atr_multiplier', 1.5)
             if not trade.get('bep_activated', False) and (high_price >= trade['entry_price'] + (stop_distance * bep_mult)):
-                bep_level = trade.get('bep_target_price', trade['entry_price'] * (1.0 + (bep_profit_pct / 100.0)))
-                if bep_level > trade['stop_loss']:
-                    trade['stop_loss'] = bep_level
+                atr_val = trade.get('atr_value', stop_distance / 1.2)
+                atr_trail_sl = high_price - (1.0 * atr_val)
+                if atr_trail_sl > trade['stop_loss']:
+                    trade['stop_loss'] = atr_trail_sl
                     trade['bep_activated'] = True
 
         else:
@@ -313,12 +317,12 @@ class Backtester:
                 self.cooldown_until = current_bar['timestamp'] + timedelta(minutes=self.config.execution.cooldown_minutes)
                 return
 
-            # Trailing Stop ATR untuk sisa posisi (>= 1.5R)
+            # Trailing Stop ATR untuk sisa posisi pasca TP1 (1.0 ATR distance)
             current_profit = high_price - trade['entry_price']
             if current_profit >= (stop_distance * 1.5):
                 atr_val = trade.get('atr_value', stop_distance / 1.2)
-                atr_trail_sl = high_price - (1.5 * atr_val)
-                if atr_trail_sl > trade['stop_loss'] and atr_trail_sl > trade['entry_price']:
+                atr_trail_sl = high_price - (1.0 * atr_val)
+                if atr_trail_sl > trade['stop_loss']:
                     trade['stop_loss'] = atr_trail_sl
 
     def close_trade(self, exit_price: float, reason: str, exit_time: datetime):

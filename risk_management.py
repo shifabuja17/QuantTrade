@@ -51,8 +51,11 @@ class RiskManager:
         stop_loss = min(stop_loss_ref, min_sl)
 
         # LANTAI PENGAMAN MUTLAK (Semua koin)
-        # Pastikan jarak SL minimal absolut 0.8% dari entry agar tidak mati karena bid-ask spread
-        min_pct = getattr(self.config, 'min_sl_distance_pct', 0.8)
+        # Pastikan jarak SL minimal absolut (misal 0.9%) dari entry agar tidak mati karena bid-ask spread
+        min_pct = getattr(self.config, 'min_sl_distance_pct', 0.9)
+
+        # Aturan Jarak SL Minimum Mutlak: max(Swing Point, 1.2*ATR, Entry * 0.009)
+        # Artinya SL akan diturunkan terus (menjauh dari entry) sampai batas yang teraman
         floor_sl = entry_price * (1.0 - (min_pct / 100.0))
         if stop_loss > floor_sl:
             stop_loss = floor_sl
