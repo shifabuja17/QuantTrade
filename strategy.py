@@ -151,7 +151,7 @@ class StrategyEngine:
         """
         Mengevaluasi status tren Bitcoin 1H sebagai Induk Pasar (BTC Market Filter).
         Crash Protection Only: HANYA akan memblokir altcoin jika BTC
-        mengalami drop ekstrem (misal > 1.8%) dalam 1 bar.
+        mengalami drop ekstrem (misal > 2.0%) dalam 1 bar.
         Trend/sideways diabaikan agar Altcoin bebas terbang.
         """
         if df_btc_htf.empty or len(df_btc_htf) < 2:
