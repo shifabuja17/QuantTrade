@@ -24,6 +24,8 @@ class TradePlan:
     take_profit_1: float = 0.0
     take_profit_2: float = 0.0
     partial_tp_ratio: float = 0.5
+    bep_target_price: float = 0.0
+    atr_value: float = 0.0
 class RiskManager:
     """
     Modul Manajemen Risiko untuk memvalidasi dan membangun Trade Plan.
@@ -39,34 +41,21 @@ class RiskManager:
         Menggunakan sistem Fixed Risk/Reward Ratio agar rasio selalu logis.
         Mendukung SL ATR Dinamis untuk Altcoin (1.5x - 2.0x ATR) agar tidak tersapu jarum (wick).
         """
-        # 1. Tentukan pengali ATR: Altcoin menggunakan pengali lebih lebar agar tidak tersapu jarum
-        btc_sym = getattr(self.config, 'btc_symbol', 'BTC/USDT')
-        is_alt = (symbol != btc_sym)
-        sl_mult = getattr(self.config, 'alt_sl_atr_multiplier', 1.8) if is_alt else self.config.sl_atr_multiplier
+        # 1. Tentukan pengali ATR: Standar untuk semua koin
+        sl_mult = 1.2
 
         # 2. Hitung Stop Loss (Dynamic Structural)
-        stop_loss = stop_loss_ref
-        
-        # Pengaman: Jika OB terlalu sempit, gunakan minimal sl_mult * ATR agar tidak tersapu noise
+        # Menggunakan nilai minimal dari: reference (bawah zona) atau Entry - 1.2 ATR.
+        # Ini memberikan napas volatilitas pada trade.
         min_sl = entry_price - (atr_value * sl_mult)
-        if stop_loss > min_sl:
-            stop_loss = min_sl
+        stop_loss = min(stop_loss_ref, min_sl)
 
-        # LANTAI PENGAMAN SL ALTCOIN:
-        # Jika Altcoin, pastikan jarak SL tidak pernah lebih sempit dari alt_min_sl_distance_pct (1.5%)
-        # agar tidak tersapu gocekan jarum (wicks) normal 15m.
-        if is_alt:
-            alt_min_pct = getattr(self.config, 'alt_min_sl_distance_pct', 1.5)
-            alt_floor_sl = entry_price * (1.0 - (alt_min_pct / 100.0))
-            if stop_loss > alt_floor_sl:
-                stop_loss = alt_floor_sl
-        else:
-            # Toleransi jarum (wicks) untuk BTC di 5m.
-            # Pastikan jarak SL minimal btc_min_sl_distance_pct (0.5%) dari entry.
-            btc_min_pct = getattr(self.config, 'min_sl_distance_pct', 0.5)
-            btc_floor_sl = entry_price * (1.0 - (btc_min_pct / 100.0))
-            if stop_loss > btc_floor_sl:
-                stop_loss = btc_floor_sl
+        # LANTAI PENGAMAN MUTLAK (Semua koin)
+        # Pastikan jarak SL minimal btc_min_sl_distance_pct (0.6%) dari entry agar tidak mati karena bid-ask spread
+        min_pct = getattr(self.config, 'min_sl_distance_pct', 0.6)
+        floor_sl = entry_price * (1.0 - (min_pct / 100.0))
+        if stop_loss > floor_sl:
+            stop_loss = floor_sl
 
         # Hitung jarak absolut dari Entry ke Stop Loss (Nilai 1R / 1 Risk)
         stop_distance = entry_price - stop_loss
@@ -167,7 +156,10 @@ class RiskManager:
         tp1_mult = getattr(self.config, 'partial_tp_atr_multiplier', 1.5)
         tp1_price = entry_price + (stop_distance * tp1_mult)
         tp2_price = take_profit
-        partial_ratio = getattr(self.config, 'partial_tp_ratio', 0.5)
+        partial_ratio = getattr(self.config, 'partial_tp_ratio', 0.6)
+
+        # Target BEP Baru: Memberi napas saat break-even (Entry + 0.3 * ATR)
+        bep_target_price = entry_price + (0.3 * atr_value)
 
         return TradePlan(
             symbol=symbol,
@@ -180,5 +172,7 @@ class RiskManager:
             notional=notional,
             take_profit_1=tp1_price,
             take_profit_2=tp2_price,
-            partial_tp_ratio=partial_ratio
+            partial_tp_ratio=partial_ratio,
+            bep_target_price=bep_target_price,
+            atr_value=atr_value
         )

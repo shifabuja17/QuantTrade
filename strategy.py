@@ -151,7 +151,7 @@ class StrategyEngine:
         """
         Mengevaluasi status tren Bitcoin 1H sebagai Induk Pasar (BTC Market Filter).
         Relaksasi: Hanya akan memberikan nilai False (bearish / memblokir) jika BTC
-        mengalami deviasi turun tajam ekstrem dalam 1 jam (misal > 2%).
+        mengalami deviasi turun tajam ekstrem dalam 1 jam (misal > 1.5%) DAN close di bawah EMA 50.
         Selain kondisi itu, return True agar RS Filter Altcoin yang mengambil alih.
         """
         if df_btc_htf.empty or len(df_btc_htf) < 2:
@@ -163,13 +163,18 @@ class StrategyEngine:
         # Hitung perubahan persentase (ROC / Change %) BTC dalam 1 bar terakhir
         pct_change = ((last_row['close'] - last_row['open']) / last_row['open']) * 100.0
 
-        # Ambil batas crash dari konfigurasi
-        crash_threshold = getattr(self.config, 'btc_crash_threshold_pct', -2.0)
+        # Cek apakah harga di bawah EMA 50
+        below_ema = False
+        if 'ema' in last_row and not pd.isna(last_row['ema']):
+            below_ema = last_row['close'] < last_row['ema']
 
-        # Jika BTC crash melebihi batas (misal -2.5% <= -2.0%), blokir pasar
-        if pct_change <= crash_threshold:
+        # Ambil batas crash dari konfigurasi (sekarang default -1.5)
+        crash_threshold = getattr(self.config, 'btc_crash_threshold_pct', -1.5)
+
+        # Jika BTC crash melebihi batas (misal -2.0% <= -1.5%) DAN sedang di bawah EMA 50, blokir pasar
+        if pct_change <= crash_threshold and below_ema:
             self.btc_market_bullish = False
-            logger.debug(f"[BTC Market] Crash terdeteksi: {pct_change:.2f}% <= {crash_threshold}%. Memblokir Altcoin.")
+            logger.debug(f"[BTC Market] Crash & Breakdown terdeteksi: {pct_change:.2f}% <= {crash_threshold}%. Memblokir Altcoin.")
         else:
             # Jika BTC sekadar sideway, ranging, atau naik lambat, tetap izinkan
             self.btc_market_bullish = True
