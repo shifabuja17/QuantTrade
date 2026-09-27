@@ -369,29 +369,9 @@ class StrategyEngine:
                 logger.debug(f"[{symbol} LTF] Sinyal dibatalkan: Stochastic %K ({stoch_k:.1f}) melebihi batas overbought ({max_stoch}).")
                 not_overbought = False
 
-        # --- FILTER MOMENTUM (RSI) ---
-        # Memastikan ada momentum yang cukup sebelum entry (mencegah fakeout)
-        min_rsi = getattr(self.config, 'ltf_min_rsi', 50.0)
-        rsi_val = last_row.get('rsi', None)
-        has_momentum = True
-        if rsi_val is not None and not pd.isna(rsi_val):
-            if rsi_val < min_rsi:
-                logger.debug(f"[{symbol} LTF] Sinyal dibatalkan: RSI ({rsi_val:.1f}) di bawah batas momentum ({min_rsi}).")
-                has_momentum = False
-
-        # --- FILTER TREN LTF (EMA 50) ---
-        # Mencegah menangkap pisau jatuh (falling knife) di dalam zona HTF
-        ltf_ema = last_row.get('ema_50', None)
-        trend_aligned = True
-        if ltf_ema is not None and not pd.isna(ltf_ema):
-            if last_row['close'] <= ltf_ema:
-                logger.debug(f"[{symbol} LTF] Sinyal dibatalkan: Harga (Close: {last_row['close']:.4f}) masih di bawah EMA 50 LTF ({ltf_ema:.4f}). Tren belum bullish.")
-                trend_aligned = False
-
-        if is_bullish_candle and micro_bos and body_dominant and volume_spike and atr_valid and not_overbought and has_momentum and trend_aligned:
+        if is_bullish_candle and micro_bos and body_dominant and volume_spike and atr_valid and not_overbought:
             stoch_info = f", Stoch: {stoch_k:.1f}" if (stoch_k is not None and not pd.isna(stoch_k)) else ""
-            rsi_info = f", RSI: {rsi_val:.1f}" if (rsi_val is not None and not pd.isna(rsi_val)) else ""
-            logger.info(f"[{symbol} LTF] Micro BOS (True Swing High @ {true_swing_high:.4f}) Terdeteksi di zona {active_zone.zone_type}! Body: {body_ratio:.0%}, Vol: {last_row['volume']:.0f}/{avg_volume:.0f}{stoch_info}{rsi_info}")
+            logger.info(f"[{symbol} LTF] Micro BOS (True Swing High @ {true_swing_high:.4f}) Terdeteksi di zona {active_zone.zone_type}! Body: {body_ratio:.0%}, Vol: {last_row['volume']:.0f}/{avg_volume:.0f}{stoch_info}")
             
             # Hybrid Adaptive Retest Entry:
             # BTC menggunakan Direct Market Entry untuk menyambar ledakan momentum.

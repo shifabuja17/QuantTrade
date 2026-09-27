@@ -44,7 +44,7 @@ class StrategyConfig:
     ltf_limit: int = 1000
     ema_period: int = 50
     tema_period: int = 200
-    adx_threshold: int = 25                # Diperketat ke 25 untuk market regime filter
+    adx_threshold: int = 20                # Dilonggarkan kembali ke 20 (berkaca pada profit ETH baseline)
     stochastic_k_period: int = 14
     stochastic_k_smoothing: int = 3
     stochastic_d_period: int = 3
@@ -58,7 +58,7 @@ class StrategyConfig:
     enable_btc_filter: bool = True
     btc_filter_symbol: str = "BTC/USDT"
     ltf_min_body_ratio: float = 0.50       # Breakout wajib 50% nyata
-    ltf_volume_multiplier: float = 1.1     # Partisipasi volume 1.1x rata-rata 20 bar (dilonggarkan dari 1.3x)
+    ltf_volume_multiplier: float = 0.8     # Dilonggarkan agar tidak memotong rally kompresi
     stochastic_overbought: float = 70.0    # Batas atas Stochastic %K (diketatkan ke 70 agar tidak beli di pucuk)
     ltf_min_rsi: float = 50.0              # Batas minimal RSI LTF untuk memastikan ada momentum bullish
     btc_min_adx: float = 18.0              # Batas minimal ADX BTC untuk filter kekuatan tren (mencegah beli saat BTC sideway mati)
@@ -118,7 +118,7 @@ class RiskConfig:
     max_quote_allocation_pct: float = 90.0
     use_static_sl_tp: bool = False
 
-    min_sl_distance_pct: float = 0.6  # Jarak SL minimal 0.6% dari harga entri (BTC)
+    min_sl_distance_pct: float = 0.8  # Jarak SL minimal absolut 0.8% dari harga entri
     max_sl_distance_pct: float = 1.5  # Jarak SL maksimal BTC 1.5% dari harga entri
     alt_min_sl_distance_pct: float = 1.5 # Jarak SL minimal Altcoin 1.5% agar kebal jarum volatilitas 15m
     alt_sl_atr_multiplier: float = 1.8   # Pengali ATR untuk SL Altcoin (1.5x - 2.0x ATR)
