@@ -277,13 +277,14 @@ class StrategyEngine:
 
         # === ADAPTIVE RELATIVE STRENGTH FILTER ===
         # Hanya memeriksa simbol yang terdaftar di rs_target_symbols.
-        # Koin high-alpha seperti BTC, LINK, ADA melewati filter ini tanpa pemeriksaan.
-        rs_targets = getattr(self.config, 'rs_target_symbols', [])
-        if symbol in rs_targets:
-            rs_pass = self.check_relative_strength(symbol, df_htf, df_btc_htf)
-            if not rs_pass:
-                logger.info(f"[{symbol} RS] Sinyal diblokir oleh Adaptive RS Filter (Altcoin sedang underperform BTC).")
-                return None
+        # Bypass mekanisme ini jika enable_relative_strength_filter False.
+        if getattr(self.config, 'enable_relative_strength_filter', True):
+            rs_targets = getattr(self.config, 'rs_target_symbols', [])
+            if symbol in rs_targets:
+                rs_pass = self.check_relative_strength(symbol, df_htf, df_btc_htf)
+                if not rs_pass:
+                    logger.info(f"[{symbol} RS] Sinyal diblokir oleh Adaptive RS Filter (Altcoin sedang underperform BTC).")
+                    return None
 
         if df_ltf.empty or len(df_ltf) < 2:
             return None

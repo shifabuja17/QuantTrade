@@ -21,12 +21,15 @@
     "btc_lower_timeframe": "5m",
     "alt_lower_timeframe": "15m",
     "enable_dynamic_timeframe": true,
-    "dynamic_candidate_timeframes": ["5m", "15m"],
+    "dynamic_candidate_timeframes": [
+      "5m",
+      "15m"
+    ],
     "dynamic_timeframe_evaluation_bars": 1000,
     "dynamic_timeframe_min_trades": 5,
     "dynamic_timeframe_min_profit_factor": 1.05,
     "dynamic_timeframe_min_expectancy_pct": 0.0,
-    "dynamic_timeframe_switch_margin": 0.10,
+    "dynamic_timeframe_switch_margin": 0.1,
     "dynamic_timeframe_cache_minutes": 1440,
     "htf_limit": 1000,
     "ltf_limit": 1000,
@@ -67,8 +70,15 @@
     "rs_roc_period": 24,
     "rs_filter_mode": "EMA",
     "rs_fail_closed_on_missing_data": true,
-    "rs_target_symbols": ["ETH/USDT", "AVAX/USDT", "SOL/USDT"],
-    "rs_roc_symbols": ["SOL/USDT", "AVAX/USDT"]
+    "rs_target_symbols": [
+      "ETH/USDT",
+      "AVAX/USDT",
+      "SOL/USDT"
+    ],
+    "rs_roc_symbols": [
+      "SOL/USDT",
+      "AVAX/USDT"
+    ]
   },
   "risk": {
     "max_risk_per_trade": 2.0,
@@ -94,7 +104,11 @@
     "partial_tp_atr_multiplier": 1.5,
     "enable_early_invalidation": true,
     "invalidation_check_htf_ema": true,
-    "invalidation_check_btc_filter": true
+    "invalidation_check_btc_filter": true,
+    "symbol_tp2_multiplier": {
+      "SOL/USDT": 1.8,
+      "BTC/USDT": 2.2
+    }
   },
   "execution": {
     "dry_run": true,
