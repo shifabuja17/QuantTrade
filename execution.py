@@ -116,7 +116,7 @@ class ExecutionEngine:
         # --- FASE 1: TRAILING PROTECTION ---
         bep_mult = getattr(self.risk_config, 'bep_trigger_atr_multiplier', 1.5)
         bep_profit_pct = getattr(self.risk_config, 'bep_profit_pct', 0.15)
-        if not trade.bep_activated and current_profit >= (stop_distance * bep_mult):
+        if trade.tp1_executed and not trade.bep_activated and current_profit >= (stop_distance * bep_mult):
             # Trailing Stop 1.5 ATR (Dilonggarkan)
             atr_val = getattr(trade, 'atr_value', stop_distance / 1.2) if hasattr(trade, 'atr_value') else stop_distance / 1.2
             trail_target = high_price - (1.5 * atr_val)
@@ -1064,29 +1064,6 @@ class ExecutionEngine:
                 if current_price <= trade.stop_loss:
                     await self.close_trade(symbol, current_price, "STOP_LOSS")
                     continue
-
-                # 3. Real-time Trailing check sebelum TP1
-                stop_distance = trade.entry_price - trade.stop_loss_initial
-                bep_mult = getattr(self.risk_config, 'bep_trigger_atr_multiplier', 1.5)
-                bep_profit_pct = getattr(self.risk_config, 'bep_profit_pct', 0.15)
-                if not trade.bep_activated and current_price >= (trade.entry_price + (stop_distance * bep_mult)):
-                    atr_val = getattr(trade, 'atr_value', stop_distance / 1.2) if hasattr(trade, 'atr_value') else stop_distance / 1.2
-                    trail_target = current_price - (1.5 * atr_val)
-                    min_bep = trade.entry_price * (1.0 + (bep_profit_pct / 100.0))
-                    trail_level = max(trail_target, min_bep)
-
-                    if trail_level > trade.stop_loss:
-                        trade.stop_loss = self.fetcher.format_price(symbol, trail_level)
-                        trade.bep_activated = True
-                        logger.info(f"[{symbol} LIVE] 🛡️ Real-time Trailing Terpicu (+{bep_mult:.1f}R)! Stop Loss dipindahkan ke {trade.stop_loss}")
-                        if self._exchange_protection_enabled():
-                            refreshed = await self._refresh_exchange_protection(trade)
-                            if not refreshed:
-                                logger.critical(
-                                    f"[{symbol}] Gagal memindahkan OCO SL ke BEP; "
-                                    "monitor Python tetap aktif sebagai fallback."
-                                )
-                        self._save_state()
             else:
                 # Sisa posisi 50% setelah TP1 (atau mode single TP)
                 target_tp = trade.take_profit_2 if enable_partial else trade.take_profit

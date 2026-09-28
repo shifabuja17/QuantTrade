@@ -1,0 +1,15 @@
+
+=======================================================
+MEMULAI BACKTEST: LINK/USDT [HTF: 1h, LTF: 15m]
+=======================================================
+[*] Memuat data 1h dari cache CSV: LINK_USDT_1h_2024-05-01_2024-11-01.csv
+[*] Memuat data 15m dari cache CSV: LINK_USDT_15m_2024-05-01_2024-11-01.csv
+
+[*] Melakukan pre-calculation indikator...
+[*] BTC Market Filter aktif. Memuat data 1h BTC/USDT...
+[*] Memuat data 1h dari cache CSV: BTC_USDT_1h_2024-05-01_2024-11-01.csv
+
+=======================================================
+HASIL BACKTEST TERVERIFIKASI: LINK/USDT (LTF: 15m)
+=======================================================
+Tidak ada trade yang tereksekusi selama periode ini.

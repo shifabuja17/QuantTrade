@@ -104,7 +104,7 @@ class RiskConfig:
     max_risk_per_trade: float = 2.0  # Dalam persen (%) - 2.0% ($20 per trade)
     symbol_risk_pct: Dict[str, float] = field(default_factory=lambda: {"LINK/USDT": 1.0, "SOL/USDT": 1.0})
     symbol_tp_ratio: Dict[str, float] = field(default_factory=lambda: {"SOL/USDT": 0.7})
-    symbol_tp2_multiplier: Dict[str, float] = field(default_factory=lambda: {"SOL/USDT": 1.8})
+    symbol_tp2_multiplier: Dict[str, float] = field(default_factory=lambda: {"SOL/USDT": 1.8, "BTC/USDT": 2.2})
     max_daily_loss_pct: float = 5.0
     max_daily_profit_pct: float = 6.0
     sl_atr_multiplier: float = 1.5
@@ -124,7 +124,7 @@ class RiskConfig:
 
     min_sl_distance_pct: float = 0.85  # Jarak SL minimal absolut 0.85% dari harga entri (mencegah fee inflation)
     max_sl_distance_pct: float = 1.5  # Jarak SL maksimal BTC 1.5% dari harga entri
-    alt_min_sl_distance_pct: float = 1.5 # Jarak SL minimal Altcoin 1.5% agar kebal jarum volatilitas 15m
+    alt_min_sl_distance_pct: float = 1.0 # Jarak SL minimal Altcoin 1.0% agar kebal jarum volatilitas 15m
     alt_sl_atr_multiplier: float = 1.8   # Pengali ATR untuk SL Altcoin (1.5x - 2.0x ATR)
     alt_max_sl_distance_pct: float = 3.5 # Jarak SL maksimal untuk Altcoin agar tidak tersapu jarum (3.5%)
     btc_symbol: str = "BTC/USDT"
